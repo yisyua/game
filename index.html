@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數字連線遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 95vw;
+            max-width: 1024px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .number-circle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            border: 4px solid transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .number-circle:hover, .number-circle:active {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .number-circle.completed {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            border-color: #fff;
+            transform: scale(0.9);
+        }
+
+        .number-circle.current {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+            animation: pulse 1s ease-in-out infinite alternate;
+            border-color: #fff;
+        }
+
+        .number-circle.error {
+            background: linear-gradient(45deg, #e17055, #d63031);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.15) rotate(5deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .svg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            stroke: #00b894;
+            stroke-width: 4;
+            fill: none;
+            stroke-linecap: round;
+            opacity: 0.8;
+        }
+
+        .success-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 184, 148, 0.95);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .difficulty-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .number-circle {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="title">🔢 數字連線遊戲</div>
+            <div class="stats">
+                <div class="stat">目標: <span id="currentTarget">1</span></div>
+                <div class="stat">完成: <span id="completed">0</span>/<span id="total">0</span></div>
+                <div class="stat">時間: <span id="timer">00:00</span></div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="newGame()">新遊戲</button>
+                <button class="btn secondary" onclick="resetGame()">重置</button>
+            </div>
+        </div>
+
+        <div class="difficulty-selector">
+            <span style="margin-right: 15px; font-weight: bold;">難度選擇：</span>
+            <button class="difficulty-btn active" onclick="setDifficulty(10)">簡單 (10個)</button>
+            <button class="difficulty-btn" onclick="setDifficulty(15)">中等 (15個)</button>
+            <button class="difficulty-btn" onclick="setDifficulty(20)">困難 (20個)</button>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <svg class="svg-overlay" id="svgOverlay">
+                <!-- 連線會在這裡繪製 -->
+            </svg>
+            <div class="success-message" id="successMessage">
+                🎉 恭喜完成！<br>
+                <span style="font-size: 18px;">點擊「新遊戲」繼續挑戰</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let numbers = [];
+        let currentTarget = 1;
+        let completedCount = 0;
+        let totalNumbers = 10;
+        let startTime = null;
+        let timerInterval = null;
+        let gameCompleted = false;
+        let connections = [];
+
+        const gameArea = document.getElementById('gameArea');
+        const svgOverlay = document.getElementById('svgOverlay');
+        const currentTargetEl = document.getElementById('currentTarget');
+        const completedEl = document.getElementById('completed');
+        const totalEl = document.getElementById('total');
+        const timerEl = document.getElementById('timer');
+        const successMessageEl = document.getElementById('successMessage');
+
+        function setDifficulty(count) {
+            totalNumbers = count;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            newGame();
+        }
+
+        function generateRandomPositions() {
+            const positions = [];
+            const areaRect = gameArea.getBoundingClientRect();
+            const circleSize = 60;
+            const margin = 40;
+            
+            for (let i = 0; i < totalNumbers; i++) {
+                let validPosition = false;
+                let attempts = 0;
+                let x, y;
+                
+                while (!validPosition && attempts < 100) {
+                    x = Math.random() * (areaRect.width - circleSize - 2 * margin) + margin;
+                    y = Math.random() * (areaRect.height - circleSize - 2 * margin) + margin;
+                    
+                    validPosition = true;
+                    for (let pos of positions) {
+                        const distance = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+                        if (distance < circleSize + 10) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    attempts++;
+                }
+                
+                positions.push({ x, y });
+            }
+            
+            return positions;
+        }
+
+        function createNumberCircle(number, x, y) {
+            const circle = document.createElement('div');
+            circle.className = 'number-circle';
+            circle.textContent = number;
+            circle.style.left = x + 'px';
+            circle.style.top = y + 'px';
+            circle.dataset.number = number;
+            
+            circle.addEventListener('click', handleCircleClick);
+            circle.addEventListener('touchstart', handleCircleClick, { passive: true });
+            
+            return circle;
+        }
+
+        function handleCircleClick(event) {
+            event.preventDefault();
+            if (gameCompleted) return;
+            
+            const clickedNumber = parseInt(event.target.dataset.number);
+            
+            if (clickedNumber === currentTarget) {
+                // 正確點擊
+                event.target.classList.add('completed');
+                completedCount++;
+                
+                // 記錄連線
+                if (completedCount > 1) {
+                    const prevCircle = document.querySelector(`[data-number="${currentTarget - 1}"]`);
+                    const currentCircle = event.target;
+                    drawConnection(prevCircle, currentCircle);
+                }
+                
+                currentTarget++;
+                updateUI();
+                
+                if (completedCount === totalNumbers) {
+                    completeGame();
+                } else {
+                    // 高亮下一個目標
+                    const nextCircle = document.querySelector(`[data-number="${currentTarget}"]`);
+                    if (nextCircle) {
+                        nextCircle.classList.add('current');
+                    }
+                }
+            } else {
+                // 錯誤點擊
+                event.target.classList.add('error');
+                setTimeout(() => {
+                    event.target.classList.remove('error');
+                }, 500);
+            }
+        }
+
+        function drawConnection(fromCircle, toCircle) {
+            const fromRect = fromCircle.getBoundingClientRect();
+            const toRect = toCircle.getBoundingClientRect();
+            const gameAreaRect = gameArea.getBoundingClientRect();
+            
+            const fromX = fromRect.left - gameAreaRect.left + fromRect.width / 2;
+            const fromY = fromRect.top - gameAreaRect.top + fromRect.height / 2;
+            const toX = toRect.left - gameAreaRect.left + toRect.width / 2;
+            const toY = toRect.top - gameAreaRect.top + toRect.height / 2;
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', fromX);
+            line.setAttribute('y1', fromY);
+            line.setAttribute('x2', toX);
+            line.setAttribute('y2', toY);
+            line.setAttribute('class', 'connection-line');
+            
+            svgOverlay.appendChild(line);
+        }
+
+        function updateUI() {
+            currentTargetEl.textContent = currentTarget;
+            completedEl.textContent = completedCount;
+            totalEl.textContent = totalNumbers;
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function completeGame() {
+            gameCompleted = true;
+            stopTimer();
+            successMessageEl.style.display = 'block';
+            
+            // 移除當前高亮
+            document.querySelectorAll('.current').forEach(circle => {
+                circle.classList.remove('current');
+            });
+        }
+
+        function newGame() {
+            // 重置遊戲狀態
+            currentTarget = 1;
+            completedCount = 0;
+            gameCompleted = false;
+            connections = [];
+            
+            // 清除舊元素
+            gameArea.querySelectorAll('.number-circle').forEach(circle => circle.remove());
+            svgOverlay.innerHTML = '';
+            successMessageEl.style.display = 'none';
+            
+            // 生成隨機數字序列
+            numbers = [];
+            for (let i = 1; i <= totalNumbers; i++) {
+                numbers.push(i);
+            }
+            
+            // 生成隨機位置
+            const positions = generateRandomPositions();
+            
+            // 創建數字圓圈
+            for (let i = 0; i < totalNumbers; i++) {
+                const circle = createNumberCircle(numbers[i], positions[i].x, positions[i].y);
+                gameArea.appendChild(circle);
+                
+                // 高亮第一個目標
+                if (numbers[i] === 1) {
+                    circle.classList.add('current');
+                }
+            }
+            
+            updateUI();
+            startTimer();
+        }
+
+        function resetGame() {
+            stopTimer();
+            
+            // 重置所有圓圈狀態
+            document.querySelectorAll('.number-circle').forEach(circle => {
+                circle.classList.remove('completed', 'current', 'error');
+            });
+            
+            // 清除連線
+            svgOverlay.innerHTML = '';
+            
+            // 重置遊戲狀態
+            currentTarget = 1;
+            completedCount = 0;
+            gameCompleted = false;
+            successMessageEl.style.display = 'none';
+            
+            // 高亮第一個目標
+            const firstCircle = document.querySelector('[data-number="1"]');
+            if (firstCircle) {
+                firstCircle.classList.add('current');
+            }
+            
+            updateUI();
+            startTimer();
+        }
+
+        // 初始化遊戲
+        newGame();
+
+        // 防止雙指縮放
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
