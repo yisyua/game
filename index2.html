@@ -12,16 +12,22 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif; /* 微軟正黑體搭配Arial，字體清晰 */
+            background-color: #f0f4f8; /* 柔和淺藍灰背景，舒適不刺眼 */
+            color: #1a1a1a; /* 深黑色文字，對比度高，易辨識 */
+            font-size: 18px; /* 較大字體，方便閱讀 */
+            line-height: 1.6; /* 適中行高，減少閱讀疲勞 */
             min-height: 100vh;
+            margin: 0;
+            padding: 0 20px; /* 兩側留白，避免文字貼邊 */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            touch-action: manipulation;
             user-select: none;
+            touch-action: manipulation;
         }
+
 
         .game-container {
             width: 95vw;
@@ -102,46 +108,51 @@
 
         .number-circle {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #74b9ff, #0984e3);
-            color: white;
+            width: 70px;              /* 麻將牌寬 */
+            height: 90px;             /* 麻將牌高 */
+            border-radius: 12px;      /* 圓角 */
+            background-color: white;  /* 麻將牌白底 */
+            color: #d63031;           /* 麻將牌紅字 */
+            font-family: 'Microsoft JhengHei', 'Arial', sans-serif;
+            font-weight: bold;
+            font-size: 32px;          /* 大字體 */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-            border: 4px solid transparent;
+            border: 3px solid #e17055; /* 麻將牌邊框 */
             user-select: none;
             touch-action: manipulation;
         }
 
         .number-circle:hover, .number-circle:active {
-            transform: scale(1.1);
+            transform: scale(1.05);
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
         .number-circle.completed {
-            background: linear-gradient(45deg, #00b894, #00a085);
-            border-color: #fff;
+            background-color: #00b894; /* 完成狀態改綠色底 */
+            color: white;
+            border-color: #00875f;
             transform: scale(0.9);
         }
 
         .number-circle.current {
-            background: linear-gradient(45deg, #fd79a8, #e84393);
+            background-color: #fd79a8; /* 當前目標改粉紅底 */
+            color: white;
             animation: pulse 1s ease-in-out infinite alternate;
-            border-color: #fff;
+            border-color: #d94a6a;
         }
 
         .number-circle.error {
-            background: linear-gradient(45deg, #e17055, #d63031);
+            background-color: #e17055; /* 錯誤狀態改橘紅底 */
             animation: shake 0.5s ease-in-out;
+            border-color: #bf3e25;
         }
 
+        /* 動畫保持不變 */
         @keyframes pulse {
             0% { transform: scale(1) rotate(0deg); }
             100% { transform: scale(1.15) rotate(5deg); }
@@ -152,6 +163,7 @@
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
+
 
         .svg-overlay {
             position: absolute;
