@@ -14,3 +14,9 @@
 ## 開發技術
 - HTML / CSS
 - JavaScript
+
+## Demo 線上預覽
+
+這個遊戲已部署在 GitHub Pages，可以直接點擊下方連結開始遊玩：
+
+🔗 https://yisyua.github.io/game/
