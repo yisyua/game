@@ -19,51 +19,55 @@
             align-items: center;
             font-family: 'Arial', sans-serif;
             touch-action: none;
+            padding: 10px;
         }
         
         .game-container {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border: 2px solid #dee2e6;
-            max-width: 95vw;
+            width: 100%;
+            max-width: 800px;
             max-height: 95vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .title {
             text-align: center;
             color: #212529;
-            font-size: 2.8em;
-            margin-bottom: 25px;
+            font-size: 1.8em;
+            margin-bottom: 15px;
             font-weight: bold;
         }
         
         .game-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
         
         .score-level {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 15px;
-            justify-content: flex-start;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         .score, .level, .timer, .mistakes {
             background: #e9ecef;
             color: #212529;
-            padding: 12px 20px;
+            padding: 8px 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 0.9em;
             border: 2px solid #495057;
             text-align: center;
+            min-width: 80px;
         }
         
         .timer {
@@ -84,21 +88,20 @@
         
         .controls {
             display: flex;
-            gap: 15px;
-            justify-content: flex-end;
+            gap: 10px;
             flex-wrap: wrap;
         }
         
         .btn {
-            padding: 20px 35px;
+            padding: 10px 15px;
             border: 3px solid #495057;
             border-radius: 10px;
-            font-size: 1.4em;
+            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 120px;
             text-align: center;
+            min-width: 80px;
         }
         
         .new-game-btn {
@@ -119,7 +122,7 @@
             border-color: #e0a800;
         }
         
-        .btn:hover {
+        .btn:hover, .btn:active {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -128,11 +131,13 @@
             position: relative;
             display: flex;
             justify-content: center;
-            margin: 25px 0;
-            padding: 20px;
+            margin: 15px 0;
+            padding: 10px;
             background: #f8f9fa;
             border: 3px solid #495057;
             border-radius: 15px;
+            flex-grow: 1;
+            min-height: 400px;
         }
         
         #gameCanvas {
@@ -141,16 +146,20 @@
             touch-action: manipulation;
             border-radius: 10px;
             border: 2px solid #dee2e6;
+            max-width: 100%;
+            max-height: 100%;
+            width: 600px;
+            height: 400px;
         }
         
         .message {
             text-align: center;
-            margin-top: 20px;
-            padding: 25px;
+            margin-top: 10px;
+            padding: 15px;
             border-radius: 10px;
-            font-size: 1.6em;
+            font-size: 1.1em;
             font-weight: bold;
-            min-height: 70px;
+            min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -173,7 +182,7 @@
             background: #fff3cd;
             color: #856404;
             border-color: #ffeaa7;
-            font-size: 1.8em;
+            font-size: 1.3em;
             animation: gentle-pulse 2s infinite;
         }
         
@@ -182,22 +191,108 @@
             50% { transform: scale(1.02); }
         }
         
-        @media (max-width: 768px) {
+        /* 平板橫屏優化 */
+        @media (min-width: 768px) and (orientation: landscape) {
             .game-container {
-                padding: 20px;
+                max-width: 900px;
+                padding: 25px;
+            }
+            
+            #gameCanvas {
+                width: 700px;
+                height: 450px;
             }
             
             .title {
-                font-size: 2.2em;
+                font-size: 2em;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 1.1em;
+            }
+            
+            .score, .level, .timer, .mistakes {
+                font-size: 1em;
+                padding: 10px 15px;
+            }
+        }
+        
+        /* 平板直屏優化 */
+        @media (max-width: 767px) or (orientation: portrait) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            .title {
+                font-size: 1.6em;
+                margin-bottom: 10px;
             }
             
             .game-info {
-                grid-template-columns: 1fr;
-                text-align: center;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .score-level {
+                justify-content: center;
             }
             
             .controls {
                 justify-content: center;
+            }
+            
+            #gameCanvas {
+                width: 500px;
+                height: 350px;
+            }
+            
+            .canvas-container {
+                min-height: 350px;
+            }
+            
+            .message {
+                font-size: 1em;
+                padding: 12px;
+                min-height: 45px;
+            }
+            
+            .current-instruction {
+                font-size: 1.2em;
+            }
+        }
+        
+        /* 小螢幕手機優化 */
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .title {
+                font-size: 1.4em;
+            }
+            
+            #gameCanvas {
+                width: 400px;
+                height: 300px;
+            }
+            
+            .canvas-container {
+                min-height: 300px;
+                padding: 8px;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                min-width: 70px;
+            }
+            
+            .score, .level, .timer, .mistakes {
+                font-size: 0.8em;
+                padding: 6px 10px;
+                min-width: 70px;
             }
         }
     </style>
@@ -222,7 +317,7 @@
         </div>
         
         <div class="canvas-container">
-            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            <canvas id="gameCanvas" width="600" height="400"></canvas>
         </div>
         
         <div id="message" class="message info">
@@ -250,32 +345,56 @@
             maxMistakes: 3
         };
         
-        // 遊戲設定 - 專為老人設計
+        // 遊戲設定 - 針對平板優化
         const config = {
-            nodeRadius: 80,                // 超大圓圈，手指容易點擊
-            lineWidth: 6,                  // 粗線條，清楚可見
+            nodeRadius: 50,                // 適合平板的圓圈大小
+            lineWidth: 6,                  // 清晰的線條
             colors: {
-                node: '#ffffff',           // 純白背景
-                nodeBorder: '#212529',     // 純黑邊框，最高對比度
-                nodeText: '#000000',       // 純黑文字
+                node: '#ffffff',           
+                nodeBorder: '#212529',     
+                nodeText: '#000000',       
                 nodeFont: 'Arial, sans-serif',
-                currentNode: '#fffacd',    // 溫和的淺黃色
-                currentNodeBorder: '#ff6b35', // 明亮的橘色邊框
-                connectedNode: '#e8f4fd',  // 淺藍色
-                connectedNodeBorder: '#0066cc', // 深藍邊框
-                line: '#666666',           // 中灰色連線
-                hintLine: '#ff6b35',       // 橘色提示線
+                currentNode: '#fffacd',    
+                currentNodeBorder: '#ff6b35', 
+                connectedNode: '#e8f4fd',  
+                connectedNodeBorder: '#0066cc', 
+                line: '#666666',           
+                hintLine: '#ff6b35',       
             }
         };
         
-        // 使用網格佈局來確保數字不會重疊，但加入隨機性和挑戰
+        // 動態調整畫布大小和節點大小
+        function adjustCanvasSize() {
+            const container = document.querySelector('.canvas-container');
+            const containerWidth = container.clientWidth - 20; // 減去padding
+            const containerHeight = container.clientHeight - 20;
+            
+            // 根據容器大小調整畫布
+            let canvasWidth = Math.min(containerWidth, 600);
+            let canvasHeight = Math.min(containerHeight, 400);
+            
+            // 保持比例
+            const aspectRatio = 600 / 400;
+            if (canvasWidth / canvasHeight > aspectRatio) {
+                canvasWidth = canvasHeight * aspectRatio;
+            } else {
+                canvasHeight = canvasWidth / aspectRatio;
+            }
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // 根據畫布大小調整節點大小
+            config.nodeRadius = Math.max(35, Math.min(50, canvasWidth / 15));
+        }
+        
+        // 使用網格佈局來確保數字不會重疊
         function generateGridPositions(count) {
             const positions = [];
-            const margin = config.nodeRadius + 40;
+            const margin = config.nodeRadius + 30;
             const availableWidth = canvas.width - 2 * margin;
             const availableHeight = canvas.height - 2 * margin;
             
-            // 根據數字數量和關卡決定佈局複雜度
             let cols, rows, useRandomOffset = false;
             
             if (count <= 4) {
@@ -302,9 +421,8 @@
                     let x = margin + col * cellWidth + cellWidth / 2;
                     let y = margin + row * cellHeight + cellHeight / 2;
                     
-                    // 高關卡增加位置隨機偏移，增加難度
                     if (useRandomOffset) {
-                        const maxOffset = Math.min(cellWidth, cellHeight) * 0.3;
+                        const maxOffset = Math.min(cellWidth, cellHeight) * 0.25;
                         x += (Math.random() - 0.5) * maxOffset;
                         y += (Math.random() - 0.5) * maxOffset;
                     }
@@ -313,13 +431,13 @@
                 }
             }
             
-            // 隨機排列位置
             const shuffled = gridPositions.sort(() => Math.random() - 0.5);
             return shuffled.slice(0, count);
         }
         
         // 初始化遊戲
         function initGame() {
+            adjustCanvasSize();
             generateLevel();
             draw();
             updateUI();
@@ -335,17 +453,14 @@
             gameState.hintUsed = false;
             gameState.mistakes = 0;
             
-            // 清除之前的計時器
             if (gameState.timerInterval) {
                 clearInterval(gameState.timerInterval);
             }
             
-            // 根據關卡調整難度
             gameState.maxNumber = Math.min(4 + Math.floor(gameState.level / 2), 10);
             
-            // 設置時間限制（從關卡3開始）
             if (gameState.level >= 3) {
-                gameState.timeLimit = 30 + gameState.maxNumber * 5; // 基礎30秒 + 每個數字5秒
+                gameState.timeLimit = 30 + gameState.maxNumber * 5;
                 gameState.timeRemaining = gameState.timeLimit;
                 startTimer();
             } else {
@@ -353,24 +468,7 @@
                 gameState.timeRemaining = 0;
             }
             
-            // 使用改進的網格佈局生成位置
             const positions = generateGridPositions(gameState.maxNumber);
-            
-            // 在高關卡可能會顛倒數字順序增加難度
-            let numbers = [];
-            for (let i = 1; i <= gameState.maxNumber; i++) {
-                numbers.push(i);
-            }
-            
-            // 關卡5以上，有30%機率包含一些反向數字
-            if (gameState.level >= 5 && Math.random() < 0.3) {
-                // 隨機選擇幾個數字位置進行特殊標記
-                const specialCount = Math.min(2, Math.floor(gameState.maxNumber / 3));
-                for (let i = 0; i < specialCount; i++) {
-                    const randomIndex = Math.floor(Math.random() * numbers.length);
-                    // 這些數字會有特殊的視覺提示
-                }
-            }
             
             for (let i = 1; i <= gameState.maxNumber; i++) {
                 gameState.numbers.push({
@@ -386,11 +484,7 @@
         // 繪製遊戲
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 繪製連線
             drawConnections();
-            
-            // 繪製數字節點
             drawNumbers();
         }
         
@@ -408,7 +502,6 @@
                 ctx.lineTo(conn.to.x, conn.to.y);
                 ctx.stroke();
                 
-                // 繪製箭頭
                 drawArrow(conn.from.x, conn.from.y, conn.to.x, conn.to.y);
             }
         }
@@ -416,14 +509,14 @@
         // 繪製箭頭
         function drawArrow(fromX, fromY, toX, toY) {
             const angle = Math.atan2(toY - fromY, toX - fromX);
-            const arrowLength = 20;
+            const arrowLength = 15;
             const arrowAngle = Math.PI / 6;
             
             const arrowX = toX - Math.cos(angle) * config.nodeRadius;
             const arrowY = toY - Math.sin(angle) * config.nodeRadius;
             
             ctx.strokeStyle = config.colors.line;
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             
             ctx.beginPath();
             ctx.moveTo(arrowX, arrowY);
@@ -444,22 +537,20 @@
             gameState.numbers.forEach(num => {
                 let fillColor, borderColor, borderWidth;
                 
-                // 決定顏色和樣式
                 if (num.number === gameState.currentNumber && !gameState.isComplete) {
                     fillColor = config.colors.currentNode;
                     borderColor = config.colors.currentNodeBorder;
-                    borderWidth = 6;
+                    borderWidth = 5;
                 } else if (num.connected) {
                     fillColor = config.colors.connectedNode;
                     borderColor = config.colors.connectedNodeBorder;
-                    borderWidth = 4;
+                    borderWidth = 3;
                 } else {
                     fillColor = config.colors.node;
                     borderColor = config.colors.nodeBorder;
-                    borderWidth = 4;
+                    borderWidth = 3;
                 }
                 
-                // 繪製圓圈
                 ctx.beginPath();
                 ctx.arc(num.x, num.y, config.nodeRadius, 0, 2 * Math.PI);
                 ctx.fillStyle = fillColor;
@@ -468,19 +559,19 @@
                 ctx.lineWidth = borderWidth;
                 ctx.stroke();
                 
-                // 繪製數字
+                // 動態調整字體大小
+                const fontSize = Math.max(25, config.nodeRadius * 0.8);
                 ctx.fillStyle = config.colors.nodeText;
-                ctx.font = `bold 60px ${config.colors.nodeFont}`;
+                ctx.font = `bold ${fontSize}px ${config.colors.nodeFont}`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(num.number.toString(), num.x, num.y);
                 
-                // 當前數字的特殊效果
                 if (num.number === gameState.currentNumber && !gameState.isComplete) {
                     ctx.beginPath();
-                    ctx.arc(num.x, num.y, config.nodeRadius + 12, 0, 2 * Math.PI);
+                    ctx.arc(num.x, num.y, config.nodeRadius + 10, 0, 2 * Math.PI);
                     ctx.strokeStyle = config.colors.currentNodeBorder;
-                    ctx.lineWidth = 8;
+                    ctx.lineWidth = 6;
                     ctx.stroke();
                 }
             });
@@ -494,7 +585,6 @@
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             
-            // 調整座標
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             const clickX = x * scaleX;
@@ -505,26 +595,23 @@
             if (clickedNumber && clickedNumber.number === gameState.currentNumber) {
                 connectNumber(clickedNumber);
             } else if (clickedNumber) {
-                // 記錄錯誤
                 gameState.mistakes++;
                 gameState.score = Math.max(0, gameState.score - 5);
                 
-                // 錯誤點擊的視覺反饋
                 flashNumber(clickedNumber, '#ff4757');
                 
                 if (gameState.mistakes >= gameState.maxMistakes) {
                     gameOver('錯誤次數太多！');
                 } else {
                     showMessage(`錯了！請點擊數字 ${gameState.currentNumber}（剩餘錯誤次數：${gameState.maxMistakes - gameState.mistakes}）`, 'current-instruction');
-                    updateUI(); // 確保UI立即更新
+                    updateUI();
                 }
             }
         }
         
         // 找到被點擊的數字
         function findClickedNumber(x, y) {
-            // 超大點擊範圍，確保容易點到
-            const touchRadius = config.nodeRadius + 30;
+            const touchRadius = config.nodeRadius + 20;
             for (let num of gameState.numbers) {
                 const distance = Math.sqrt((x - num.x) ** 2 + (y - num.y) ** 2);
                 if (distance <= touchRadius) {
@@ -566,9 +653,9 @@
             let flashCount = 0;
             const flashInterval = setInterval(() => {
                 ctx.beginPath();
-                ctx.arc(number.x, number.y, config.nodeRadius + 15, 0, 2 * Math.PI);
+                ctx.arc(number.x, number.y, config.nodeRadius + 12, 0, 2 * Math.PI);
                 ctx.strokeStyle = flashCount % 2 === 0 ? color : 'transparent';
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 5;
                 ctx.stroke();
                 
                 flashCount++;
@@ -613,23 +700,21 @@
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
+        
         // 完成關卡
         function completeLevel() {
             gameState.isComplete = true;
             
-            // 停止計時器
             if (gameState.timerInterval) {
                 clearInterval(gameState.timerInterval);
             }
             
-            // 時間獎勵分數
             let timeBonus = 0;
             if (gameState.timeLimit > 0) {
                 timeBonus = Math.max(0, gameState.timeRemaining * 2);
                 gameState.score += timeBonus;
             }
             
-            // 完美獎勵（沒有錯誤）
             let perfectBonus = 0;
             if (gameState.mistakes === 0) {
                 perfectBonus = 25 * gameState.level;
@@ -680,7 +765,6 @@
             gameState.isComplete = false;
             gameState.mistakes = 0;
             
-            // 重新開始計時
             if (gameState.level >= 3) {
                 if (gameState.timerInterval) {
                     clearInterval(gameState.timerInterval);
@@ -741,6 +825,13 @@
                 clientY: touch.clientY
             });
             handleClick(clickEvent);
+        });
+        
+        // 視窗大小改變時重新調整
+        window.addEventListener('resize', function() {
+            setTimeout(() => {
+                initGame();
+            }, 100);
         });
         
         // 初始化遊戲
