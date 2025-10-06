@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>數字連線遊戲</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+      background: linear-gradient(-45deg, #e3f2fd, #81d4fa, #aed581, #fff9c4, #ffccbc, #e1bee7);
+      background-size: 400% 400%;
+      animation: gradientShift 8s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .bubble:nth-child(1) {
+      width: 100px;
+      height: 100px;
+      left: 8%;
+      top: 15%;
+      animation-delay: 0s;
+      animation-duration: 7s;
+    }
+
+    .bubble:nth-child(2) {
+      width: 140px;
+      height: 140px;
+      right: 12%;
+      top: 8%;
+      animation-delay: 1s;
+      animation-duration: 9s;
+    }
+
+    .bubble:nth-child(3) {
+      width: 80px;
+      height: 80px;
+      left: 18%;
+      bottom: 12%;
+      animation-delay: 2s;
+      animation-duration: 8s;
+    }
+
+    .bubble:nth-child(4) {
+      width: 120px;
+      height: 120px;
+      right: 8%;
+      bottom: 18%;
+      animation-delay: 1.5s;
+      animation-duration: 10s;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.6;
+      }
+      25% {
+        transform: translateY(-30px) translateX(20px) scale(1.1);
+        opacity: 0.8;
+      }
+      50% {
+        transform: translateY(-50px) translateX(-10px) scale(0.9);
+        opacity: 0.7;
+      }
+      75% {
+        transform: translateY(-20px) translateX(-30px) scale(1.05);
+        opacity: 0.75;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .back-button {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(239, 83, 80, 0.4);
+      z-index: 100;
+      animation: fadeIn 1s ease-out 0.5s both;
+    }
+
+    .back-button:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 8px 24px rgba(239, 83, 80, 0.6);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+      animation: fadeIn 1s ease-out 0.3s both;
+      z-index: 10;
+    }
+
+    header h1 {
+      color: #37474f;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.9);
+    }
+
+    #hintBtn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      padding: 16px 40px;
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+      color: white;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+      z-index: 100;
+      animation: fadeIn 1s ease-out 0.5s both;
+    }
+
+    #hintBtn:disabled {
+      background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #hintBtn:hover:enabled {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+    }
+
+    #hintBtn:active:enabled {
+      transform: translateY(-1px);
+    }
+
+    .message-container {
+      text-align: center;
+      margin-bottom: 15px;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    #message {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #37474f;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    #errorMessage {
+      font-size: 1.4rem;
+      font-weight: 600;
+      min-height: 1.8rem;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
+    }
+
+    #container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      animation: fadeInUp 0.8s ease-out;
+      min-height: 450px;
+    }
+
+    .node {
+      position: absolute;
+      width: 65px;
+      height: 65px;
+      background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+      border: 4px solid #2c3e50;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.9rem;
+      font-weight: bold;
+      color: #2c3e50;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .node:hover {
+      transform: scale(1.2);
+      background: linear-gradient(135deg, #d0e6f7 0%, #90caf9 100%);
+      box-shadow: 0 6px 16px rgba(100, 181, 246, 0.5);
+      z-index: 10;
+    }
+
+    .node.active {
+      background: linear-gradient(135deg, #c8e6c9 0%, #81c784 100%);
+      border-color: #4caf50;
+      color: #2e7d32;
+      transform: none;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    @keyframes flash {
+      0%, 100% {
+        box-shadow: 0 0 20px 8px rgba(255, 235, 59, 0.9);
+        background: linear-gradient(135deg, #fff59d 0%, #ffeb3b 100%);
+        transform: scale(1.3);
+        border-color: #fdd835;
+      }
+      50% {
+        box-shadow: 0 0 30px 12px rgba(255, 235, 59, 1);
+        background: linear-gradient(135deg, #ffeb3b 0%, #fdd835 100%);
+        transform: scale(1.4);
+        border-color: #f9a825;
+      }
+    }
+
+    .hint-flash {
+      animation: flash 0.8s ease-in-out 2;
+      z-index: 999 !important;
+    }
+
+    /* 大桌面 */
+    @media (min-width: 1441px) {
+      header h1 {
+        font-size: 3.5rem;
+      }
+
+      #hintBtn {
+        padding: 20px 50px;
+        font-size: 1.6rem;
+      }
+
+      .back-button {
+        width: 65px;
+        height: 65px;
+        font-size: 32px;
+      }
+
+      #message {
+        font-size: 2.2rem;
+      }
+
+      #errorMessage {
+        font-size: 1.6rem;
+      }
+
+      .node {
+        width: 75px;
+        height: 75px;
+        font-size: 2.1rem;
+      }
+
+      .message-container {
+        min-height: 85px;
+        margin-bottom: 20px;
+      }
+    }
+
+    /* 標準桌面 */
+    @media (min-width: 1025px) and (max-width: 1440px) {
+      header h1 {
+        font-size: 3rem;
+      }
+
+      #hintBtn {
+        padding: 18px 45px;
+        font-size: 1.5rem;
+      }
+
+      .back-button {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+      }
+
+      #message {
+        font-size: 2rem;
+      }
+
+      #errorMessage {
+        font-size: 1.5rem;
+      }
+
+      .node {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+      }
+
+      .message-container {
+        min-height: 75px;
+      }
+    }
+
+    /* 平板橫向 (主要優化目標) */
+    @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+      body {
+        padding: 12px;
+      }
+
+      header h1 {
+        font-size: 2.5rem;
+        letter-spacing: 1.5px;
+      }
+
+      #hintBtn {
+        padding: 14px 36px;
+        font-size: 1.3rem;
+        top: 12px;
+        right: 12px;
+      }
+
+      .back-button {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        top: 12px;
+        left: 12px;
+      }
+
+      #message {
+        font-size: 1.6rem;
+      }
+
+      #errorMessage {
+        font-size: 1.3rem;
+      }
+
+      .message-container {
+        min-height: 65px;
+        margin-bottom: 12px;
+      }
+
+      .node {
+        width: 58px;
+        height: 58px;
+        font-size: 1.7rem;
+        border-width: 3px;
+      }
+
+      #container {
+        border-radius: 24px;
+        min-height: 420px;
+      }
+    }
+
+    /* 平板直向 */
+    @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+      header h1 {
+        font-size: 2.8rem;
+      }
+
+      #hintBtn {
+        padding: 16px 40px;
+        font-size: 1.4rem;
+      }
+
+      .back-button {
+        width: 55px;
+        height: 55px;
+        font-size: 26px;
+      }
+
+      #message {
+        font-size: 1.8rem;
+      }
+
+      #errorMessage {
+        font-size: 1.4rem;
+      }
+
+      .node {
+        width: 62px;
+        height: 62px;
+        font-size: 1.8rem;
+      }
+
+      #container {
+        min-height: 500px;
+      }
+    }
+
+    /* 手機橫向 */
+    @media (max-width: 767px) and (orientation: landscape) {
+      body {
+        padding: 10px;
+      }
+
+      header h1 {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+      }
+
+      #hintBtn {
+        padding: 10px 28px;
+        font-size: 1.1rem;
+        top: 10px;
+        right: 10px;
+      }
+
+      .back-button {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+        top: 10px;
+        left: 10px;
+      }
+
+      #message {
+        font-size: 1.3rem;
+      }
+
+      #errorMessage {
+        font-size: 1.1rem;
+      }
+
+      .message-container {
+        min-height: 55px;
+        margin-bottom: 10px;
+      }
+
+      .node {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+        border-width: 3px;
+      }
+
+      #container {
+        border-radius: 20px;
+        min-height: 320px;
+      }
+
+      header {
+        margin-bottom: 10px;
+      }
+    }
+
+    /* 手機直向 */
+    @media (max-width: 767px) and (orientation: portrait) {
+      body {
+        padding: 12px;
+      }
+
+      header h1 {
+        font-size: 2rem;
+        letter-spacing: 1.5px;
+      }
+
+      #hintBtn {
+        padding: 12px 32px;
+        font-size: 1.2rem;
+      }
+
+      .back-button {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+
+      #message {
+        font-size: 1.5rem;
+      }
+
+      #errorMessage {
+        font-size: 1.2rem;
+      }
+
+      .message-container {
+        min-height: 65px;
+      }
+
+      .node {
+        width: 55px;
+        height: 55px;
+        font-size: 1.6rem;
+        border-width: 3px;
+      }
+
+      #container {
+        min-height: 450px;
+      }
+    }
+
+    /* 小型手機 */
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1.7rem;
+      }
+
+      #hintBtn {
+        padding: 10px 26px;
+        font-size: 1.1rem;
+      }
+
+      .back-button {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+      }
+
+      #message {
+        font-size: 1.3rem;
+      }
+
+      #errorMessage {
+        font-size: 1.1rem;
+      }
+
+      .node {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+      }
+
+      #container {
+        min-height: 400px;
+      }
+    }
+
+    /* 超小型手機 */
+    @media (max-width: 360px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      #hintBtn {
+        padding: 8px 22px;
+        font-size: 1rem;
+      }
+
+      .back-button {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      #message {
+        font-size: 1.2rem;
+      }
+
+      .node {
+        width: 44px;
+        height: 44px;
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+
+  <span class="back-button" onclick="location.href='../numberstart.html'">X</span>
+  <button id="hintBtn" onclick="showHint()">💡 提示</button>
+
+  <header>
+    <h1>數字連線遊戲</h1>
+  </header>
+
+  <div class="message-container">
+    <div id="message"></div>
+    <div id="errorMessage"></div>
+  </div>
+
+  <div id="container">
+    <canvas id="lineCanvas"></canvas>
+  </div>
+
+  <script>
+    const container = document.getElementById('container');
+    const canvas = document.getElementById('lineCanvas');
+    const ctx = canvas.getContext('2d');
+    const message = document.getElementById('message');
+    const errorMessage = document.getElementById('errorMessage');
+    const hintBtn = document.getElementById('hintBtn');
+
+    let currentLevel = 1;
+    let nodes = [];
+    let currentIndex = 0;
+    let startTime = null;
+    let totalStartTime = new Date();
+
+    let wrongClicks = 0;
+    let hintCount = 0;
+
+    let baseMessage = '';
+
+    function resizeCanvas(){
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      drawLines();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function clearCanvas(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawLines(){
+      clearCanvas();
+      if (currentIndex < 2) return;
+      ctx.strokeStyle = '#27ae60';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = 'rgba(39, 174, 96, 0.4)';
+      ctx.beginPath();
+      for (let i = 0; i < currentIndex; i++) {
+        const n = nodes[i];
+        const x = n.x + n.size/2;
+        const y = n.y + n.size/2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    function randomPosition(size, w, h) {
+      const x = Math.random() * (w - size);
+      const y = Math.random() * (h - size);
+      return { x, y };
+    }
+
+    function startCooldown() {
+      hintBtn.disabled = false;
+      hintBtn.textContent = '💡 提示';
+    }
+
+    function showHint() {
+      if (hintBtn.disabled) return;
+      if (currentIndex >= nodes.length) return;
+
+      const next = nodes[currentIndex];
+      next.element.classList.add('hint-flash');
+      setTimeout(() => {
+        next.element.classList.remove('hint-flash');
+      }, 2000);
+
+      hintCount++;
+      showErrorMsg(`💡 提示次數：${hintCount}`, false);
+      startCooldown();
+    }
+
+    function showErrorMsg(txt, isError = true) {
+      errorMessage.textContent = txt;
+      errorMessage.style.color = isError ? '#e53935' : '#43a047';
+      errorMessage.style.opacity = '1';
+      clearTimeout(errorMessage._timeout);
+      errorMessage._timeout = setTimeout(() => {
+        errorMessage.style.opacity = '0';
+      }, 2000);
+    }
+
+    function showErrorOnMessage(txt) {
+      message.textContent = txt;
+      clearTimeout(message._timeout);
+      message._timeout = setTimeout(() => {
+        message.textContent = baseMessage;
+      }, 2000);
+    }
+
+    function restoreBaseMessage() {
+      clearTimeout(message._timeout);
+      message.textContent = baseMessage;
+    }
+
+    function getNodeSize() {
+      const width = window.innerWidth;
+      const isLandscape = window.innerWidth > window.innerHeight;
+      
+      if (width > 1440) return 75;
+      if (width > 1024) return 70;
+      if (width > 767 && isLandscape) return 58;
+      if (width > 767) return 62;
+      if (width > 480 && isLandscape) return 48;
+      if (width > 480) return 55;
+      if (width > 360) return 48;
+      return 44;
+    }
+
+    function createLevel(level) {
+      container.querySelectorAll('.node').forEach(n => n.remove());
+      nodes = [];
+      currentIndex = 0;
+      clearCanvas();
+
+      const nodeCount = level * 5;
+      baseMessage = `第 ${level} 關\n請依序點擊數字 1 → ${nodeCount}`;
+      message.textContent = baseMessage;
+
+      startTime = new Date();
+
+      const nodeSize = getNodeSize();
+      const minDist = nodeSize + 25;
+
+      function isFarEnough(x, y) {
+        return nodes.every(n => {
+          const dx = n.x - x, dy = n.y - y;
+          return Math.sqrt(dx * dx + dy * dy) >= minDist;
+        });
+      }
+
+      for (let i = 1; i <= nodeCount; i++) {
+        let pos, tries = 0;
+        do {
+          pos = randomPosition(nodeSize, container.clientWidth, container.clientHeight);
+          tries++;
+          if (tries > 1000) break;
+        } while (!isFarEnough(pos.x, pos.y));
+
+       const el = document.createElement('div');
+       el.className = 'node';
+
+       // 檢查 i 是否為 6、9、16 或 19
+        if (i === 6 || i === 9 || i === 16 || i === 19) {
+        el.innerHTML = `<span style="text-decoration: underline;">${i}</span>`;
+        } else {
+        el.textContent = i;
+        }
+
+        const angles = [0, 90, 180, 270];
+        const angle = angles[Math.floor(Math.random() * angles.length)];
+        el.style.transform = `rotate(${angle}deg)`;
+
+        el.style.left = pos.x + 'px';
+        el.style.top = pos.y + 'px';
+        el.style.width = nodeSize + 'px';
+        el.style.height = nodeSize + 'px';
+        container.appendChild(el);
+
+        const nodeObj = {
+          value: i,
+          x: pos.x,
+          y: pos.y,
+          size: nodeSize,
+          element: el
+        };
+        nodes.push(nodeObj);
+
+        el.addEventListener('click', () => {
+          if (i === currentIndex + 1) {
+            el.classList.add('active');
+            currentIndex++;
+            drawLines();
+            restoreBaseMessage();
+
+            if (currentIndex === nodeCount) {
+              const endTime = new Date();
+              const duration = ((endTime - startTime)/1000).toFixed(2);
+
+              const storage = {
+                [`duration${level-1}`]: duration,
+                [`hintCount${level-1}`]: hintCount,
+                [`wrongClicks${level-1}`]: wrongClicks
+              };
+
+              if (level === 4) {
+                const totalTime = ((new Date() - totalStartTime)/1000).toFixed(2);
+                storage.totalTime = totalTime;
+                storage.test = '測驗';
+                
+                Object.entries(storage).forEach(([key, value]) => {
+                  try {
+                    localStorage.setItem(key, value);
+                  } catch (e) {
+                    console.log(`儲存 ${key}: ${value}`);
+                  }
+                });
+                
+                
+                window.location.href = '../numberend.html';
+              } else {
+                Object.entries(storage).forEach(([key, value]) => {
+                  try {
+                    localStorage.setItem(key, value);
+                  } catch (e) {
+                    console.log(`儲存 ${key}: ${value}`);
+                  }
+                });
+                
+                message.textContent = `🎉 第 ${level} 關完成！\n3 秒後進入下一關...`;
+                setTimeout(() => {
+                  currentLevel++;
+                  createLevel(currentLevel);
+                  startCooldown();
+                }, 3000);
+              }
+            }
+          } else {
+            wrongClicks++;
+            showErrorOnMessage(`❌ 錯誤！請點選數字 ${currentIndex + 1}`);
+          }
+        });
+      }
+    }
+
+    createLevel(currentLevel);
+    startCooldown();
+  </script>
+</body>
+</html>

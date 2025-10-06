@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖片說明2 - 數字對對碰</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ----------- Body & Background Styles (與主頁面相同) ----------- */
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            /* 靜態深灰漸層背景 */
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 確保內容垂直居中 */
+            padding: 20px;
+            position: relative;
+            overflow: hidden; 
+        }
+
+        /* ----------- 幾何動畫背景樣式 (與主頁面相同) ----------- */
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1; 
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        /* 旋轉圓圈 */
+        .circle {
+            position: absolute;
+            border: 2px solid #dfe6e9; 
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 漂浮粒子 */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #b2bec3;
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translate(0, 0);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(100px, -100px);
+                opacity: 0.8;
+            }
+        }
+        
+        /* 規則標題線條擴展動畫 (主頁面也有) */
+        @keyframes line-expand {
+            0%,100%{width:80px;}
+            50%{width:160px;}
+        }
+
+
+        /* ----------- 遊戲內容卡片容器樣式 ----------- */
+        .content-card {
+            background: rgba(255, 255, 255, 0.95); /* 奶油白色半透明卡片 */
+            border-radius: 30px;
+            padding: 40px 50px; 
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            max-width: 800px; 
+            width: 90%; 
+            text-align: center; /* 讓內容居中 */
+            box-sizing: border-box; 
+        }
+
+        /* 遊戲規則標題樣式 */
+        .content-card h2 {
+            text-align: center;
+            color: #2d3436;
+            font-size: 38px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        /* 遊戲規則標題底線 (與主頁面 H1 相似) */
+        .content-card h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px; 
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #636e72, transparent);
+            animation: line-expand 2s ease-in-out infinite; 
+        }
+        
+        /* 點選錯誤提示文字 */
+        .content-card h3 {
+            color: #dc3545; /* 紅色 */
+            font-size: 28px;
+            margin-top: 25px;
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+
+        /* ----------- 數字方格 (Keyboard) 樣式 ----------- */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .cell {
+            aspect-ratio: 1;
+            width: 80px; /* 調整按鈕大小，使其在 500px 寬度內排列 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            user-select: none;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+        }
+        
+        /* 方格懸停效果 */
+        .cell:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        /* 顏色樣式 (保留使用者定義的 color1/color2) */
+        .color1 {
+            background-color: #6C6C6C	; /* 淺色背景 */
+            color: white; /* 深灰文字 */
+        }
+
+        .color2 {
+            background-color: #e9ecef; /* 略深的背景 */
+            color: #4a4a4a; /* 略深的文字 */
+        }
+        
+        /* 突出顯示 (Highlight) 錯誤 */
+        .highlight {
+            background-color: #dc3545; /* 警告紅背景 */
+            color: white; /* 白色文字 */
+            animation: shake 0.3s ease-in-out 3; /* 錯誤動畫 */
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* ------------------- 導航按鈕樣式 (已整理) ------------------- */
+        /* 導航按鈕的容器，用於定位左右箭頭和 X */
+        .arrow-wrapper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 10;
+        }
+
+        /* 導航按鈕通用樣式 */
+        .arrow-button, .arrow-button1, .back-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.85); 
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3436; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            user-select: none;
+            pointer-events: auto; /* 啟用點擊事件 */
+        }
+
+        /* 懸停效果 (Hover Effect) */
+        .arrow-button:hover, .arrow-button1:hover, .back-button:hover {
+            background: #636e72; 
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transform: translateY(-50%) scale(1.1); 
+        }
+
+        /* 1. 向右箭頭 (Next) */
+        .arrow-button {
+            right: 40px; 
+            font-size: 32px; 
+        }
+
+        /* 2. 向左箭頭 (Previous) */
+        .arrow-button1 {
+            left: 40px; 
+            font-size: 32px;
+        }
+
+        /* 3. 關閉按鈕 (X) */
+        .back-button {
+            top: 40px; 
+            left: 40px;
+            transform: none; /* 移除 Y 軸置中 */
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            font-weight: 400;
+        }
+        /* 關閉按鈕懸停時 Y 軸不變 */
+        .back-button:hover {
+            transform: scale(1.1); 
+        }
+        
+        /* ------------------- 使用者資訊 (User Info) 樣式 ------------------- */
+        /* 調整定位，使其不影響置中的卡片 */
+        .user-info {
+             position: absolute;
+             top: 20px;
+             right: 30px;
+             font-size: 20px; /* 調整字體大小，使其更協調 */
+             color: #dfe6e9; /* 淺色文字，與深色背景匹配 */
+             display: flex;
+             gap: 15px; /* 加大間距 */
+             align-items: center;
+             z-index: 20; /* 確保在最上層 */
+             font-family: "華康兒風體W3", 'Microsoft JhengHei', sans-serif;
+        }
+
+        .user-info button {
+             padding: 8px 15px; /* 調整按鈕大小 */
+             background-color: #a29bfe; /* 稍微深一點的藍紫色 */
+             color: white; /* 白色字體 */
+             border: none;
+             border-radius: 8px;
+             font-size: 16px; /* 調整字體大小 */
+             cursor: pointer;
+             font-weight: bold;
+             transition: background-color 0.3s ease, transform 0.1s ease;
+             font-family: "華康兒風體W3", 'Microsoft JhengHei', sans-serif;
+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info button:hover {
+             background-color: #897bff;
+             transform: translateY(-1px);
+        }
+
+
+        /* ------------------- 響應式調整 ------------------- */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .content-card {
+                padding: 30px 25px;
+                width: 95%;
+            }
+            .content-card h2 {
+                font-size: 30px;
+                margin-bottom: 25px;
+            }
+            .content-card h3 {
+                font-size: 24px;
+                margin-top: 20px;
+            }
+            .keyboard {
+                gap: 10px;
+            }
+            .row {
+                gap: 10px;
+            }
+            .cell {
+                width: 60px; /* 手機上按鈕更小 */
+                font-size: 24px;
+            }
+            
+            /* 手機版按鈕調整 */
+            .arrow-button, .arrow-button1, .back-button {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+            .arrow-button { right: 15px; }
+            .arrow-button1 { left: 15px; }
+            .back-button { 
+                top: 20px;
+                left: 20px;
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+            .back-button:hover {
+                transform: scale(1.1); 
+            }
+            
+            /* 手機版使用者資訊調整 */
+            .user-info {
+                top: 10px;
+                right: 10px;
+                font-size: 16px;
+                gap: 10px;
+            }
+            .user-info button {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="geometric-bg" id="geometric"></div>
+  
+
+    <div class="arrow-wrapper">
+        <span class="arrow-button1" onclick="location.href='illustrate_1.html'">❮</span>
+        <span class="arrow-button" onclick="location.href='illustrate_pi2.html'">❯</span>
+        <span class="back-button" onclick="location.href='../checkcardstart.html'">X</span>
+    </div>
+
+    <div class="content-card">
+        <h2>遊戲規則</h2>
+        
+        <div class="keyboard">
+            <div class="row">
+                <button class="cell color1">8</button>
+                <button class="cell color2">7</button>
+                <button class="cell color1">15</button>
+                <button class="cell color2">18</button>
+                <button class="cell color1">14</button>
+            </div>
+            <div class="row">
+                <button class="cell color2">4</button>
+                <button class="cell color1">16</button>
+                <button class="cell color2">5</button>
+                <button class="cell color1">2</button>
+                <button class="cell color2">11</button>
+            </div>
+            <div class="row">
+                <button class="cell color1">10</button>
+                <button class="cell color2">8</button>
+                <button class="cell color1 highlight">9</button> 
+                <button class="cell color2 highlight">12</button>
+                <button class="cell color1">13</button>
+            </div>
+        </div>
+
+        <h3>點選錯誤</h3> </div>
+
+
+    <script>
+        // ----------- 幾何背景動畫 JavaScript (與主頁面相同) -----------
+        const geometricBg = document.getElementById('geometric');
+
+        // 圓圈資料 (固定位置，添加移動動畫)
+        const circlesData = [
+            { left: '5%', top: '10%', size: 250, duration: 20, delay: 0 },
+            { left: '80%', top: '15%', size: 300, duration: 25, delay: 3 },
+            { left: '20%', top: '70%', size: 220, duration: 22, delay: 2 },
+            { left: '70%', top: '60%', size: 280, duration: 18, delay: 1 },
+            { left: '40%', top: '40%', size: 260, duration: 24, delay: 4 },
+        ];
+
+        // 創建圓圈並添加浮動效果
+        circlesData.forEach((c, index) => {
+            const circle = document.createElement('div');
+            circle.className = 'circle';
+            circle.style.width = c.size + 'px';
+            circle.style.height = c.size + 'px';
+            circle.style.left = c.left;
+            circle.style.top = c.top;
+            circle.style.animationDuration = c.duration + 's';
+            circle.style.animationDelay = c.delay + 's';
+            geometricBg.appendChild(circle);
+
+            // 添加緩慢移動動畫
+            animateCircle(circle, index);
+        });
+
+        function animateCircle(circle, index) {
+            const moveTime = 8000 + (index * 1000);
+
+            function move() {
+                const currentLeft = parseFloat(circle.style.left);
+                const currentTop = parseFloat(circle.style.top);
+
+                const newLeft = currentLeft + (Math.random() - 0.5) * 5;
+                const newTop = currentTop + (Math.random() - 0.5) * 5;
+
+                circle.style.transition = `left ${moveTime}ms ease-in-out, top ${moveTime}ms ease-in-out`;
+                circle.style.left = Math.max(0, Math.min(95, newLeft)) + '%';
+                circle.style.top = Math.max(0, Math.min(95, newTop)) + '%';
+            }
+
+            setInterval(move, moveTime);
+        }
+
+        // 粒子資料 (固定位置)
+        const particlesData = [
+            { left: '10%', top: '20%', duration: 15, delay: 0 },
+            { left: '25%', top: '80%', duration: 18, delay: 1 },
+            { left: '60%', top: '30%', duration: 16, delay: 2 },
+            { left: '85%', top: '70%', duration: 20, delay: 3 },
+            { left: '40%', top: '50%', duration: 17, delay: 4 },
+            { left: '70%', top: '20%', duration: 19, delay: 2 },
+            { left: '15%', top: '60%', duration: 15, delay: 1 },
+            { left: '50%', top: '10%', duration: 16, delay: 0 },
+            { left: '30%', top: '35%', duration: 18, delay: 2 },
+            { left: '80%', top: '50%', duration: 20, delay: 3 },
+            { left: '60%', top: '80%', duration: 19, delay: 1 },
+            { left: '5%', top: '50%', duration: 17, delay: 0 },
+            { left: '90%', top: '10%', duration: 16, delay: 2 },
+            { left: '20%', top: '25%', duration: 18, delay: 1 },
+            { left: '45%', top: '70%', duration: 15, delay: 0 },
+            { left: '75%', top: '40%', duration: 16, delay: 3 },
+            { left: '10%', top: '80%', duration: 17, delay: 2 },
+            { left: '55%', top: '55%', duration: 19, delay: 1 },
+            { left: '35%', top: '15%', duration: 20, delay: 4 },
+            { left: '65%', top: '25%', duration: 18, delay: 2 },
+        ];
+
+        // 創建粒子
+        particlesData.forEach(p => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = p.left;
+            particle.style.top = p.top;
+            particle.style.animationDuration = p.duration + 's';
+            particle.style.animationDelay = p.delay + 's';
+            geometricBg.appendChild(particle);
+        });
+        
+        
+     
+        
+      
+    </script>
+</body>
+</html>

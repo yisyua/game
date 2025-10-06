@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲規則 - 數字對對碰</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ----------- Body & Background Styles (與主頁面相同) ----------- */
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            /* 靜態深灰漸層背景 */
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 確保內容垂直居中 */
+            padding: 20px; /* 提供一些頁面邊距 */
+            position: relative;
+            overflow: hidden; /* 隱藏超出視窗的內容，配合背景動畫 */
+        }
+
+        /* ----------- 幾何動畫背景樣式 (與主頁面相同) ----------- */
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1; /* 透明度降低，作為背景裝飾 */
+            pointer-events: none; /* 確保背景不會阻擋鼠標事件 */
+            z-index: 0;
+        }
+
+        /* 旋轉圓圈 */
+        .circle {
+            position: absolute;
+            border: 2px solid #dfe6e9; /* 淺色邊框 */
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 漂浮粒子 */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #b2bec3;
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translate(0, 0);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(100px, -100px);
+                opacity: 0.8;
+            }
+        }
+        
+        /* 規則標題線條擴展動畫 (主頁面也有) */
+        @keyframes line-expand {
+            0%,100%{width:80px;}
+            50%{width:160px;}
+        }
+
+
+        /* ----------- 遊戲規則卡片容器樣式 (與主頁面容器相似) ----------- */
+        .rule-card {
+            background: rgba(255, 255, 255, 0.95); /* 奶油白色半透明卡片 */
+            border-radius: 30px;
+            padding: 40px 50px; /* 根據規則內容調整內邊距 */
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            max-width: 800px; /* 控制規則卡片的總寬度 */
+            width: 90%; /* 響應式調整 */
+            text-align: left; /* 文字靠左 */
+            box-sizing: border-box; 
+        }
+
+        /* 遊戲規則標題樣式 */
+        .rule-card h2 {
+            text-align: center;
+            color: #2d3436;
+            font-size: 38px;
+            margin-bottom: 40px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        /* 遊戲規則標題底線 (與主頁面 H1 相似) */
+        .rule-card h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px; 
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #636e72, transparent);
+            animation: line-expand 2s ease-in-out infinite; 
+        }
+
+        /* 規則列表樣式 */
+        .rule-card ol {
+            list-style-type: decimal; /* 數字列表 */
+            padding-left: 25px; 
+            color: #4a4a4a; /* 規則文字顏色 */
+            font-size: 20px; 
+            line-height: 1.8; /* 行高 */
+        }
+
+        .rule-card ol li {
+            margin-bottom: 15px; /* 每條規則的間距 */
+        }
+
+        /* ------------------- 導航按鈕樣式 (已整理) ------------------- */
+        /* 導航按鈕的容器，用於定位左右箭頭和 X */
+        .arrow-wrapper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 10;
+        }
+
+        /* 導航按鈕通用樣式 */
+        .arrow-button, .arrow-button1, .back-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.85); /* 奶油白色半透明 */
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3436; /* 深灰文字 */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            user-select: none;
+            pointer-events: auto; /* 啟用點擊事件 */
+        }
+
+        /* 懸停效果 (Hover Effect) */
+        .arrow-button:hover, .arrow-button1:hover, .back-button:hover {
+            background: #636e72; /* 懸停時變深灰色 */
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transform: translateY(-50%) scale(1.1); /* 懸停放大 */
+        }
+
+        /* 1. 向右箭頭 (Next) */
+        .arrow-button {
+            right: 40px; 
+            font-size: 32px; 
+        }
+
+        /* 2. 向左箭頭 (Previous) */
+        .arrow-button1 {
+            left: 40px; 
+            font-size: 32px;
+        }
+
+        /* 3. 關閉按鈕 (X) */
+        .back-button {
+            top: 40px; 
+            left: 40px;
+            transform: none; /* 移除 Y 軸置中 */
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            font-weight: 400;
+        }
+        /* 關閉按鈕懸停時 Y 軸不變 */
+        .back-button:hover {
+            transform: scale(1.1); 
+        }
+
+        /* ------------------- 響應式調整 ------------------- */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .rule-card {
+                padding: 30px 25px;
+                width: 95%;
+            }
+            .rule-card h2 {
+                font-size: 30px;
+                margin-bottom: 30px;
+            }
+            .rule-card ol {
+                font-size: 18px;
+                padding-left: 20px;
+            }
+            /* 手機版按鈕調整 */
+            .arrow-button, .arrow-button1, .back-button {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+            .arrow-button { right: 15px; }
+            .arrow-button1 { left: 15px; }
+            .back-button { 
+                top: 20px;
+                left: 20px;
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+            .back-button:hover {
+                transform: scale(1.1); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="geometric-bg" id="geometric"></div>
+    
+    <div class="arrow-wrapper">
+        <span class="arrow-button" onclick="location.href='illustrate_pi1.html'">❯</span>
+        <span class="arrow-button1" onclick="location.href='../checkcardstart.html'">❮</span>
+        <span class="back-button" onclick="location.href='../checkcardstart.html'">X</span>
+    </div>
+
+    <div class="rule-card">
+        <h2>遊戲規則</h2>
+        <ol>
+            <li>畫面會出現一個 3x5 的方格，共 15 個數字</li>
+            <li>所有格子中，只有一組數字是重複的（例如有兩個「27」）</li>
+            <li>觀察整個畫面，找出並點選那兩個相同的數字</li>
+            <li>點選正確後會得分，將自動進入下一題</li>
+        </ol>
+    </div>
+
+    <script>
+        // ----------- 幾何背景動畫 JavaScript (與主頁面相同) -----------
+        const geometricBg = document.getElementById('geometric');
+
+        // 圓圈資料 (固定位置，添加移動動畫)
+        const circlesData = [
+            { left: '5%', top: '10%', size: 250, duration: 20, delay: 0 },
+            { left: '80%', top: '15%', size: 300, duration: 25, delay: 3 },
+            { left: '20%', top: '70%', size: 220, duration: 22, delay: 2 },
+            { left: '70%', top: '60%', size: 280, duration: 18, delay: 1 },
+            { left: '40%', top: '40%', size: 260, duration: 24, delay: 4 },
+        ];
+
+        // 創建圓圈並添加浮動效果
+        circlesData.forEach((c, index) => {
+            const circle = document.createElement('div');
+            circle.className = 'circle';
+            circle.style.width = c.size + 'px';
+            circle.style.height = c.size + 'px';
+            circle.style.left = c.left;
+            circle.style.top = c.top;
+            circle.style.animationDuration = c.duration + 's';
+            circle.style.animationDelay = c.delay + 's';
+            geometricBg.appendChild(circle);
+
+            // 添加緩慢移動動畫
+            animateCircle(circle, index);
+        });
+
+        function animateCircle(circle, index) {
+            const moveTime = 8000 + (index * 1000);
+
+            function move() {
+                const currentLeft = parseFloat(circle.style.left);
+                const currentTop = parseFloat(circle.style.top);
+
+                const newLeft = currentLeft + (Math.random() - 0.5) * 5;
+                const newTop = currentTop + (Math.random() - 0.5) * 5;
+
+                circle.style.transition = `left ${moveTime}ms ease-in-out, top ${moveTime}ms ease-in-out`;
+                circle.style.left = Math.max(0, Math.min(95, newLeft)) + '%';
+                circle.style.top = Math.max(0, Math.min(95, newTop)) + '%';
+            }
+
+            setInterval(move, moveTime);
+        }
+
+        // 粒子資料 (固定位置)
+        const particlesData = [
+            { left: '10%', top: '20%', duration: 15, delay: 0 },
+            { left: '25%', top: '80%', duration: 18, delay: 1 },
+            { left: '60%', top: '30%', duration: 16, delay: 2 },
+            { left: '85%', top: '70%', duration: 20, delay: 3 },
+            { left: '40%', top: '50%', duration: 17, delay: 4 },
+            { left: '70%', top: '20%', duration: 19, delay: 2 },
+            { left: '15%', top: '60%', duration: 15, delay: 1 },
+            { left: '50%', top: '10%', duration: 16, delay: 0 },
+            { left: '30%', top: '35%', duration: 18, delay: 2 },
+            { left: '80%', top: '50%', duration: 20, delay: 3 },
+            { left: '60%', top: '80%', duration: 19, delay: 1 },
+            { left: '5%', top: '50%', duration: 17, delay: 0 },
+            { left: '90%', top: '10%', duration: 16, delay: 2 },
+            { left: '20%', top: '25%', duration: 18, delay: 1 },
+            { left: '45%', top: '70%', duration: 15, delay: 0 },
+            { left: '75%', top: '40%', duration: 16, delay: 3 },
+            { left: '10%', top: '80%', duration: 17, delay: 2 },
+            { left: '55%', top: '55%', duration: 19, delay: 1 },
+            { left: '35%', top: '15%', duration: 20, delay: 4 },
+            { left: '65%', top: '25%', duration: 18, delay: 2 },
+        ];
+
+        // 創建粒子
+        particlesData.forEach(p => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = p.left;
+            particle.style.top = p.top;
+            particle.style.animationDuration = p.duration + 's';
+            particle.style.animationDelay = p.delay + 's';
+            geometricBg.appendChild(particle);
+        });
+    </script>
+</body>
+</html>

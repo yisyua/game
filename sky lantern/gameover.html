@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>遊戲結果</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            color: #000;
+            }
+    
+
+    body {
+            background: linear-gradient(135deg, 
+            #1a1a2e 0%, 
+            #16213e 25%, 
+            #0f3460 50%, 
+            #533483 75%, 
+            #e94057 100%);
+            background-attachment: fixed; /* 確保背景固定 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            min-height: 100vh;
+          }
+
+          .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s infinite;
+    }
+
+    .star:nth-child(odd) { animation-delay: 1.5s; }
+    .star:nth-child(3n) { animation-delay: 0.5s; }
+
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    .clouds {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .cloud {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        animation: cloudFloat 20s linear infinite;
+    }
+
+    .cloud::before,
+    .cloud::after {
+        content: '';
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+    }
+
+    .cloud1 {
+        width: 80px;
+        height: 30px;
+        top: 20%;
+        animation-duration: 25s;
+    }
+
+    .cloud1::before {
+        width: 50px;
+        height: 40px;
+        top: -15px;
+        left: 10px;
+    }
+
+    .cloud1::after {
+        width: 40px;
+        height: 35px;
+        top: -10px;
+        right: 10px;
+    }
+
+    .cloud2 {
+        width: 60px;
+        height: 25px;
+        top: 60%;
+        animation-duration: 30s;
+        animation-delay: -10s;
+    }
+
+    .cloud2::before {
+        width: 40px;
+        height: 30px;
+        top: -10px;
+        left: 5px;
+    }
+
+    .cloud2::after {
+        width: 35px;
+        height: 28px;
+        top: -8px;
+        right: 5px;
+    }
+
+    @keyframes cloudFloat {
+        from { transform: translateX(-100px); }
+        to { transform: translateX(calc(100vw + 100px)); }
+    }
+
+    .user-info {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 1.3rem;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+      z-index: 999;
+      animation: slideInRight 0.5s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .user-info button {
+      font-size: 1.1rem;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .user-info button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 2rem;
+      color: black;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-weight: 700;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .container {
+      background: rgba(229, 217, 217, 0.98); 
+      padding: 3rem 2.5rem;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 650px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .result-box1 {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      padding: 2.5rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #f1ae9a 0%, #e9a58f 100%);
+      color: #333;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(252, 182, 159, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .result-box1:hover {
+      transform: translateY(-5px);
+    }
+
+    .result-box1 .rank-text {
+      font-size: 2.8rem;
+      color: #ea5252;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-box1 .score-text {
+      font-size: 2rem;
+      color: #098078;
+    }
+
+.toggle-btn {
+  display: block;                  /* 讓它像一條橫幅 */
+  width: 100%;                     /* 可以改成固定寬度，例如 300px */
+  max-width: 300px;                /* 控制最大寬度 */
+  background: linear-gradient(90deg, #495867 100%);
+  color: white;
+  border: none;
+  padding: 1rem;                   /* 高度 */
+  font-size: 1.1rem;
+  border-radius: 8px;              /* 不要太圓，保留一點角度 */
+  cursor: pointer;
+  font-weight: 600;
+  text-align: center;              /* 文字置中 */
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  margin: 10px auto;               /* 置中對齊 */
+}
+
+.toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+
+
+    .details-box {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, #D8DDDE 100%);
+      border-radius: 20px;
+      font-size: 1.5rem;
+      line-height: 2.2;
+      box-shadow: 0 6px 20px rgba(142, 197, 252, 0.3);
+      animation: slideDown 0.4s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        max-height: 0;
+        opacity: 0;
+      }
+      to {
+        max-height: 300px;
+        opacity: 1;
+      }
+    }
+
+    .details-box p {
+      margin: 0.8rem 0;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .buttons button {
+      flex: 1 1 160px;
+      max-width: 200px;
+      font-size: 1.5rem;
+      padding: 1.2rem 1.5rem;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+background: linear-gradient(135deg, #577399 100%);
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(168, 237, 234, 0.3);
+    }
+
+    .buttons button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(168, 237, 234, 0.5);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      .container {
+        padding: 2rem 1.5rem;
+      }
+      .result-box1 {
+        font-size: 1.4rem;
+        padding: 1.8rem;
+      }
+      .result-box1 .rank-text {
+        font-size: 2rem;
+      }
+      .result-box1 .score-text {
+        font-size: 1.6rem;
+      }
+      .buttons button {
+        font-size: 1.3rem;
+        flex: 1 1 120px;
+        max-width: 150px;
+      }
+      .user-info {
+        font-size: 1.1rem;
+        padding: 0.8rem 1rem;
+        top: 1rem;
+        right: 1rem;
+      }
+      .user-info button {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+      }
+      .toggle-btn {
+        font-size: 1.2rem;
+        padding: 0.9rem 1.5rem;
+      }
+      .details-box {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+   <div class="stars"></div>
+    <div class="clouds">
+      <div class="cloud cloud1"></div>
+      <div class="cloud cloud2"></div>
+    </div>
+
+  <div class="container">
+    <h1>點擊天燈挑戰 - 結算</h1>
+
+    <div class="result-box1">
+      <div class="rank-text">排名：<span id="rank">—</span></div>
+      <div class="score-text">最終分數：<span id="usedTime1">—</span> 分</div>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleDetails()">📊 顯示詳細數據</button>
+
+    <div id="detailsBox" class="details-box hidden">
+      🎯 命中率：<span id="accuracyDisplay"></span>%</p>
+      ❌ 失敗率：<span id="failureDisplay"></span>%
+    </div>
+
+    <div class="buttons">
+      <button class="exit-btn" onclick="location.href='../checkcard/checkcardstart.html';" id="gamebtn">下一個遊戲</button>
+    </div>
+  </div>
+
+  <script>
+       function createStars() {
+        const starsContainer = document.querySelector('.stars');
+        const starCount = 100;
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // 頁面載入完成後調用函式
+    window.addEventListener('load', function() {
+        createStars();
+    });
+    // 獲取用戶資料
+    const username = localStorage.getItem('nickname') || '玩家';
+    const rank = localStorage.getItem("rank") || "—";
+    const score = localStorage.getItem("score") || "0";
+
+    // 獲取詳細數據並正確計算百分比
+    const hitBalloons = parseFloat(localStorage.getItem("hitBalloons")) || 0;
+    const missedLanterns = parseFloat(localStorage.getItem("missedLanterns")) || 0;
+    const totalTargets = parseFloat(localStorage.getItem("totalTargets")) || 0;
+    
+    // 計算命中率和失敗率
+    const accuracy = localStorage.getItem('accuracy');
+    const failureRate = localStorage.getItem('failureRate');
+    
+    // 顯示用戶資料
+    document.getElementById('rank').textContent = rank;
+    document.getElementById('usedTime1').textContent = score;
+    
+    // 顯示詳細數據
+    document.getElementById("accuracyDisplay").textContent = accuracy;
+    document.getElementById("failureDisplay").textContent = failureRate;
+
+    // 切換詳細數據顯示
+    function toggleDetails() {
+      const detailsBox = document.getElementById("detailsBox");
+      const toggleBtn = document.querySelector(".toggle-btn");
+      
+      if (detailsBox.classList.contains("hidden")) {
+        detailsBox.classList.remove("hidden");
+        toggleBtn.textContent = "📊 隱藏詳細數據";
+      } else {
+        detailsBox.classList.add("hidden");
+        toggleBtn.textContent = "📊 顯示詳細數據";
+      }
+    }
+
+    // 登出功能
+    function logout() {
+      if (confirm("確定要登出嗎？")) {
+        localStorage.clear();
+        location.href = "../index.html";
+      }
+    }
+
+    // 清除遊戲數據
+    function clearGame() {
+      const keysToClear = [
+        "score", "accuracy", "avgCombo", "mistakeRate", 
+        "count", "failureRate", "hitBalloons", "missedLanterns", 
+        "totalTargets", "rank"
+      ];
+      keysToClear.forEach(key => localStorage.removeItem(key));
+    }
+
+    // Debug: 在控制台顯示所有數據
+    console.log("遊戲數據:");
+    console.log("分數:", score);
+    console.log("命中率:", accuracy + "%");
+    console.log("失敗率:", failureRate + "%");
+
+      const gamebtn = document.getElementById('gamebtn');
+      gamebtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+
+        gamebtn.innerHTML = '載入中...';
+        gamebtn.disabled = true;
+        const user_name = localStorage.getItem('nickname') || 0; // 預設為 0 或其他適當值
+        const age = localStorage.getItem('age');
+        try {
+            const res = await fetch("/lantern", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                user_name: user_name,
+                age:age,  // 名稱要對應 DB 的欄位
+                hit_rate: accuracy,
+                failure_rate: failureRate
+                })
+
+            });
+
+            if (!res.ok) {
+                throw new Error(`Server returned ${res.status}`);
+            }
+
+            const data = await res.json();
+            console.log("伺服器回應：", data);
+
+            gamebtn.classList.add('success-animation');
+            gamebtn.innerHTML = '✅ 準備進入遊戲';
+            setTimeout(goToNextGame, 1000);
+
+        } catch (err) {
+            console.error("送出失敗：", err);
+            gamebtn.innerHTML = '重新嘗試';
+            gamebtn.disabled = false;
+        }
+    });
+  </script>
+</body>
+</html>

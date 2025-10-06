@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>測試三 數字對對碰</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+.geometric-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
+}
+.circle {
+    position: absolute;
+    border: 2px solid #dfe6e9;
+    border-radius: 50%;
+    animation: rotate 20s linear infinite;
+}
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #b2bec3;
+    border-radius: 50%;
+    animation: float-particle 15s infinite;
+}
+@keyframes float-particle {
+    0%, 100% { 
+        transform: translate(0, 0);
+        opacity: 0.3;
+    }
+    50% { 
+        transform: translate(100px, -100px);
+        opacity: 0.8;
+    }
+}
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 30px;
+    padding: 40px 60px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+    max-width: 1400px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+h1 {
+    text-align: center;
+    color: #2d3436;
+    font-size: 52px;
+    margin-bottom: 40px;
+    font-weight: 700;
+    letter-spacing: 10px;
+    position: relative;
+    padding-bottom: 20px;
+}
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #636e72, transparent);
+    animation: line-expand 2s ease-in-out infinite;
+}
+@keyframes line-expand {
+    0%,100%{width:100px;}
+    50%{width:200px;}
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 500px;
+    flex-shrink: 0;
+}
+.grid-item {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 48px;
+    font-weight: 700;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    user-select: none;
+    position: relative;
+}
+.grid-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.grid-item:hover::before {
+    opacity: 1;
+}
+.grid-item.active {
+    background: linear-gradient(135deg,#636e72 0%,#2d3436 100%);
+    color:white;
+    box-shadow:0 10px 30px rgba(45,52,54,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.grid-item.active::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    background: linear-gradient(45deg,#636e72,#2d3436,#636e72);
+    z-index:-1;
+    filter:blur(10px);
+    opacity:0.5;
+}
+.grid-item.inactive {
+    background:#f8f9fa;
+    color:#636e72;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+    border:1px solid #e9ecef;
+}
+.grid-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(45,52,54,0.3);
+}
+.grid-item:active {
+    transform: translateY(-2px);
+}
+.button-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    width: 100%;
+    max-width: 900px;
+}
+.btn {
+    padding: 25px 35px;
+    font-size: 24px;
+    font-weight: 600;
+    border:2px solid;
+    border-radius:15px;
+    cursor:pointer;
+    transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    letter-spacing:2px;
+    position: relative;
+    overflow: hidden;
+    background:white;
+    width: 100%;
+}
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    transition: left 0.4s cubic-bezier(0.4,0,0.2,1);
+    z-index: 0;
+}
+.btn span {
+    position:relative; 
+    z-index:1;
+    transition: color 0.4s ease;
+}
+.btn-text {
+    color:#2d3436; 
+    border-color:#2d3436;
+}
+.btn-text::before {
+    background: linear-gradient(135deg, #2d3436 0%, #1a1f20 100%);
+}
+.btn-text:hover {
+    border-color:#1a1f20;
+    box-shadow: 0 10px 30px rgba(45,52,54,0.4);
+    transform: translateY(-3px);
+}
+.btn-text:hover span {
+    color: white;
+}
+.btn-text:hover::before {
+    left: 0;
+}
+
+.btn-video {
+    color:#636e72; 
+    border-color:#636e72;
+}
+.btn-video::before {
+    background: linear-gradient(135deg, #636e72 0%, #4a5458 100%);
+}
+.btn-video:hover {
+    border-color:#4a5458;
+    box-shadow: 0 10px 30px rgba(99,110,114,0.4);
+    transform: translateY(-3px);
+}
+.btn-video:hover span {
+    color: white;
+}
+.btn-video:hover::before {
+    left: 0;
+}
+
+.btn-start {
+    color:#b2bec3; 
+    border-color:#b2bec3;
+}
+.btn-start::before {
+    background: linear-gradient(135deg, #b2bec3 0%, #8f9da6 100%);
+}
+.btn-start:hover {
+    border-color:#8f9da6;
+    box-shadow: 0 10px 30px rgba(178,190,195,0.4);
+    transform: translateY(-3px);
+}
+.btn-start:hover span {
+    color: white;
+}
+.btn-start:hover::before {
+    left: 0;
+}
+
+.btn:active {
+    transform: translateY(0px);
+}
+
+/* --- 新增：針對平板橫向的精細調整 (例如 1025px - 1366px 寬度) --- */
+@media (min-width: 1025px) and (max-width: 1366px) {
+    .login-container {
+        /* 將最大寬度稍微縮小，避免在過寬的螢幕上拉得太開 */
+        max-width: 1000px;
+        padding: 50px 70px; /* 增加邊距讓內容更舒適 */
+        border-radius: 50px;
+        /* 確保內容不會頂到邊緣 */
+    }
+
+    .login-header h1 {
+        font-size: 3rem; /* 標題在橫向螢幕上可以更大氣 */
+    }
+
+    .subtitle {
+        font-size: 1.4rem;
+    }
+
+    .form-grid {
+        /* 在橫向平板上維持雙欄佈局，並調整欄間距 */
+        grid-template-columns: 1fr 1fr;
+        gap: 30px 50px;
+        margin-bottom: 40px;
+    }
+
+    .form-label {
+        font-size: 1.5rem; /* 標籤文字稍微放大，提高可讀性 */
+    }
+
+    .form-input,
+    .form-select {
+        padding: 20px 18px; /* 輸入框和選擇框加高 */
+        font-size: 1.3rem; /* 輸入文字稍微放大 */
+        border-radius: 20px;
+    }
+
+    .submit-button {
+        padding: 22px; /* 按鈕加高，更容易點擊 */
+        font-size: 1.8rem;
+        border-radius: 25px;
+    }
+}
+
+/* 手機 */
+@media (max-width: 768px) {
+    .container {
+        padding: 30px 20px;
+    }
+    h1 {
+        font-size: 32px;
+        margin-bottom: 30px;
+        letter-spacing: 4px;
+    }
+    .content-wrapper {
+        gap: 30px;
+    }
+    .game-grid {
+        width: 100%;
+        max-width: 350px;
+        gap: 15px;
+    }
+    .grid-item {
+        font-size: 36px;
+    }
+    .button-group {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .btn {
+        font-size: 20px;
+        padding: 18px 25px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="geometric-bg" id="geometric"></div>
+
+<div class="container">
+    <h1>測試三　數字對對碰</h1>
+    
+    <div class="content-wrapper">
+        <div class="game-grid">
+            <div class="grid-item active">8</div>
+            <div class="grid-item inactive">7</div>
+            <div class="grid-item active">15</div>
+            <div class="grid-item inactive">4</div>
+            <div class="grid-item active">16</div>
+            <div class="grid-item inactive">5</div>
+            <div class="grid-item active">10</div>
+            <div class="grid-item inactive">8</div>
+            <div class="grid-item active">9</div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-text" onclick="location.href='illustrate/illustrate_1.html'">
+                <span>文字遊戲解說</span>
+            </button>
+            
+            <button class="btn btn-video" onclick="location.href='checkcard_movie.html'">
+                <span>影片遊戲解說</span>
+            </button>
+            
+            <button class="btn btn-start" onclick="location.href='checkcard.html'">
+                <span>直接開始</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 固定圓圈位置動畫
+const geometricBg = document.getElementById('geometric');
+
+// 圓圈資料 (固定位置，添加移動動畫)
+const circlesData = [
+    { left: '5%', top: '10%', size: 250, duration: 20, delay: 0 },
+    { left: '80%', top: '15%', size: 300, duration: 25, delay: 3 },
+    { left: '20%', top: '70%', size: 220, duration: 22, delay: 2 },
+    { left: '70%', top: '60%', size: 280, duration: 18, delay: 1 },
+    { left: '40%', top: '40%', size: 260, duration: 24, delay: 4 },
+];
+
+// 創建圓圈並添加浮動效果
+circlesData.forEach((c, index) => {
+    const circle = document.createElement('div');
+    circle.className = 'circle';
+    circle.style.width = c.size + 'px';
+    circle.style.height = c.size + 'px';
+    circle.style.left = c.left;
+    circle.style.top = c.top;
+    circle.style.animationDuration = c.duration + 's';
+    circle.style.animationDelay = c.delay + 's';
+    geometricBg.appendChild(circle);
+    
+    // 添加緩慢移動動畫
+    animateCircle(circle, index);
+});
+
+function animateCircle(circle, index) {
+    const moveTime = 8000 + (index * 1000);
+    
+    function move() {
+        const currentLeft = parseFloat(circle.style.left);
+        const currentTop = parseFloat(circle.style.top);
+        
+        const newLeft = currentLeft + (Math.random() - 0.5) * 5;
+        const newTop = currentTop + (Math.random() - 0.5) * 5;
+        
+        circle.style.transition = `left ${moveTime}ms ease-in-out, top ${moveTime}ms ease-in-out`;
+        circle.style.left = Math.max(0, Math.min(95, newLeft)) + '%';
+        circle.style.top = Math.max(0, Math.min(95, newTop)) + '%';
+    }
+    
+    setInterval(move, moveTime);
+}
+
+// 粒子資料 (固定位置)
+const particlesData = [
+    { left: '10%', top: '20%', duration: 15, delay: 0 },
+    { left: '25%', top: '80%', duration: 18, delay: 1 },
+    { left: '60%', top: '30%', duration: 16, delay: 2 },
+    { left: '85%', top: '70%', duration: 20, delay: 3 },
+    { left: '40%', top: '50%', duration: 17, delay: 4 },
+    { left: '70%', top: '20%', duration: 19, delay: 2 },
+    { left: '15%', top: '60%', duration: 15, delay: 1 },
+    { left: '50%', top: '10%', duration: 16, delay: 0 },
+    { left: '30%', top: '35%', duration: 18, delay: 2 },
+    { left: '80%', top: '50%', duration: 20, delay: 3 },
+    { left: '60%', top: '80%', duration: 19, delay: 1 },
+    { left: '5%', top: '50%', duration: 17, delay: 0 },
+    { left: '90%', top: '10%', duration: 16, delay: 2 },
+    { left: '20%', top: '25%', duration: 18, delay: 1 },
+    { left: '45%', top: '70%', duration: 15, delay: 0 },
+    { left: '75%', top: '40%', duration: 16, delay: 3 },
+    { left: '10%', top: '80%', duration: 17, delay: 2 },
+    { left: '55%', top: '55%', duration: 19, delay: 1 },
+    { left: '35%', top: '15%', duration: 20, delay: 4 },
+    { left: '65%', top: '25%', duration: 18, delay: 2 },
+];
+
+// 創建粒子
+particlesData.forEach(p => {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = p.left;
+    particle.style.top = p.top;
+    particle.style.animationDuration = p.duration + 's';
+    particle.style.animationDelay = p.delay + 's';
+    geometricBg.appendChild(particle);
+});
+
+// 方塊點擊效果
+document.querySelectorAll('.grid-item').forEach(item=>{
+    item.addEventListener('click',function(){
+        this.classList.toggle('active');
+        this.classList.toggle('inactive');
+
+        // 擴散圈
+        const ring=document.createElement('div');
+        ring.style.position='absolute';
+        ring.style.border='2px solid #636e72';
+        ring.style.borderRadius='50%';
+        ring.style.width='30px';
+        ring.style.height='30px';
+        ring.style.left='50%';
+        ring.style.top='50%';
+        ring.style.transform='translate(-50%,-50%)';
+        ring.style.pointerEvents='none';
+        this.appendChild(ring);
+        ring.animate([
+            {width:'30px',height:'30px',opacity:1,borderWidth:'2px'},
+            {width:'150px',height:'150px',opacity:0,borderWidth:'0px'}
+        ],{duration:600,easing:'ease-out'}).onfinish=()=>ring.remove();
+    });
+});
+
+// 按鈕點擊效果
+document.querySelectorAll('.btn').forEach(btn=>{
+    btn.addEventListener('click',function(e){
+        const rect=this.getBoundingClientRect();
+        const x=e.clientX-rect.left;
+        const y=e.clientY-rect.top;
+        const ripple=document.createElement('div');
+        ripple.style.position='absolute';
+        ripple.style.left=x+'px';
+        ripple.style.top=y+'px';
+        ripple.style.width='10px';
+        ripple.style.height='10px';
+        ripple.style.borderRadius='50%';
+        ripple.style.background='rgba(255,255,255,0.6)';
+        ripple.style.transform='translate(-50%,-50%)';
+        ripple.style.pointerEvents='none';
+        this.appendChild(ripple);
+        ripple.animate([{width:'10px',height:'10px',opacity:1},{width:'400px',height:'400px',opacity:0}],
+        {duration:600,easing:'ease-out'}).onfinish=()=>ripple.remove();
+    });
+});
+</script>
+</body>
+</html>

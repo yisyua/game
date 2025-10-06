@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>遊戲規則說明</title>
+  <link rel="stylesheet" href="static/style8.css">
+</head>
+<style>
+.user-info {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: #333;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+   font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.user-info button {
+  padding: 6px 12px;
+  background-color: #CECEFF;
+  border: none;
+  border-radius: 8px;
+  size: 40px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  font-family: "華康兒風體W3";
+}
+
+.user-info button:hover {
+  background-color: #b2b2ff;
+}
+
+.arrow-left {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-top: 4px solid black;
+  border-left: 4px solid black;
+  transform: rotate(-45deg);
+  margin: 20px;
+  cursor: pointer;
+}
+.arrow-right {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-top: 4px solid black;
+  border-right: 4px solid black;
+  transform: rotate(45deg);  /* 旋轉方向改為正 45 度 */
+  margin: 20px;
+  cursor: pointer;
+}
+
+</style>
+<body>
+  <div class="container">
+    <header>
+      <h1>數字連線</h1>
+    </header>
+    <div class="login-box">
+      <h1 style="text-align: center;">影片待放區</h1>
+    </div>
+    <span class="arrow-button2" onclick="location.href='numberstart.html'">X</span>
+    <script>
+      const username = localStorage.getItem("nickname") || "訪客";
+      document.getElementById("username").textContent = `您好，${username}`;
+
+      function logout() {
+        localStorage.clear(); // 一鍵清除所有 localStorage 資料
+       location.href = "../index.html"; // 替換成你的登入頁路徑
+      }
+        function exportGameData() {
+    const records = JSON.parse(localStorage.getItem("gameResults") || "[]");
+    if (records.length === 0) {
+      alert("沒有遊戲紀錄可匯出！");
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(records);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "遊戲紀錄");
+    XLSX.writeFile(wb, "game_results.xlsx");
+
+    // 清空遊戲紀錄（如果你要保留就註解這行）
+    localStorage.removeItem("gameResults");
+  }
+    </script>
+  </div>
+</body>
+</html>

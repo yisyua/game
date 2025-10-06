@@ -1,0 +1,134 @@
+/* 全局設定 */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  background-color: #fff;
+}
+
+/* 標題 */
+h1 {
+  font-size: 2.5vw;
+  text-align: center;
+  margin: 2vw auto;
+}
+
+/* 倒數計時 */
+#timer {
+  font-size: 2.5vw;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 1vw;
+}
+
+/* 固定3欄2列 */
+form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3欄 */
+  grid-template-rows: repeat(2, auto);   /* 2列 */
+  gap: 2vw;
+  max-width: 600px;      /* 最大寬度限制 */
+  margin: 3vw auto;      /* 上下3vw，左右自動置中 */
+  padding: 0 2vw;
+  justify-content: center; /* 水平置中grid */
+  align-content: center;   /* 垂直置中grid (如果有多空間) */
+}
+
+
+/* 卡片按鈕 */
+.card-button {
+  width: 200px;
+  aspect-ratio: 1 / 1;   /* 保持正方形 */
+  font-size: 3vw;
+  border-radius: 12px;
+  border:ridge;
+  border: 5px solid #ccc;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+  padding: 0;
+}
+
+.card-button:active {
+  transform: scale(0.96);
+}
+
+.card-button img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* 成對配對樣式 */
+.matched {
+  background-color: rgb(140, 210, 163);
+  font-weight: bold;
+  color: black;
+  cursor: default;
+}
+
+/* 提示按鈕 */
+#hintButton {
+  position: fixed;       /* 固定位置 */
+  top: 20px;            /* 離頂部 20px */
+  right: 20px;          /* 離右側 20px */
+  font-size: 1.5vw;
+  padding: 1vw 2vw;
+  background-color: orange;
+  color: white;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+  max-width: none;      /* 取消寬度限制 */
+  width: auto;
+  z-index: 1000;        /* 確保在最上層 */
+  margin: 0;            /* 移除 margin */
+  display: block;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: background-color 0.3s ease;
+}
+
+
+#hintButton:disabled {
+  background-color: lightgray;
+  cursor: not-allowed;
+}
+
+/* 遊戲結束畫面 */
+#gameOverScreen {
+  display: none;
+  text-align: center;
+  font-size: 2vw;
+  margin-top: 2vw;
+}
+
+/* 隱藏右上角時間區塊 */
+#timer-container {
+  display: none !important;
+}
+
+/* 手機螢幕小於 600px 額外調整 */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 5vw;
+  }
+
+  #timer {
+    font-size: 6vw;
+  }
+
+  .card-button {
+    font-size: 8vw;
+  }
+
+  #hintButton {
+    font-size: 4vw;
+  }
+}

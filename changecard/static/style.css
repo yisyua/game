@@ -1,0 +1,61 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #F0E5F4;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 32px;
+}
+
+.container {
+  width: 90%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rule-container {
+  background-color: #fff7fc;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rule-list {
+  list-style-position: inside;
+  padding-left: 0;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #333;
+}
+
+.arrow-wrapper {
+  display: flex;
+  justify-content: flex-end; /* 箭頭靠右 */
+  width: 100%;         /* ✅ 佔滿整行 */
+  margin-left: 95px; /* 向左偏移 */
+  margin-top: -180px;   /* 向下偏移 */
+}
+
+.arrow {
+  font-size: 100px;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.arrow:hover {
+  transform: scale(1.2);
+}

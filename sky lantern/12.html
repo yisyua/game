@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>天燈點擊遊戲</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
+
+    /* 替換為暗色星空漸層 (來自您的第一個範例) */
+    body {
+    font-family: 'Arial', sans-serif;
+    /* 暗色星空漸層：深藍、藍紫、紫紅 */
+    background: linear-gradient(
+        135deg,
+        #1a1a2e 0%,
+        #16213e 25%,
+        #0f3460 50%,
+        #533483 75%,
+        #e94057 100%
+    );
+    background-attachment: fixed;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+    position: relative;
+    touch-action: manipulation;
+}
+.floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 確保粒子不會阻擋點擊事件 */
+    z-index: 1;
+}
+
+.particle-bg {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3));
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    /* 結合動畫：float (上升) 和 twinkle (閃爍) 動畫 */
+    animation:
+        float 15s ease-in-out infinite,
+        twinkle 2s ease-in-out infinite alternate;
+}
+
+/* 粒子動畫：從底部升起並消逝 (模擬天燈或流星) */
+@keyframes float {
+    0% { transform: translateY(100vh) scale(0.5); opacity: 0.2; }
+    50% { transform: translateY(50vh) scale(1); opacity: 0.8; }
+    100% { transform: translateY(-20vh) scale(0.5); opacity: 0; }
+}
+
+/* 新增的閃爍動畫 (解決您上次提出的「沒有閃」的問題) */
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.3; /* 降低透明度模擬閃爍 */
+        transform: scale(0.5); /* 縮小模擬亮度降低 */
+    }
+}
+
+    #gameCanvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+      position: relative;
+      z-index: 10;
+      cursor: pointer;
+    }
+
+    /* 遊戲介面 */
+    .game-ui {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 15px;
+    }
+
+    .hud {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 20px;
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .stat {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #ffd700;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 特效 */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #ffd700;
+      border-radius: 50%;
+      animation: sparkle 1.2s ease-out forwards;
+    }
+
+    @keyframes sparkle {
+      0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1) rotate(180deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(0.5) rotate(360deg) translateY(-80px);
+        opacity: 0;
+      }
+    }
+
+    .score-popup {
+      position: absolute;
+      color: #ffd700;
+      font-size: 1.8rem;
+      font-weight: bold;
+      pointer-events: none;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+      z-index: 30;
+      animation: scoreFloat 1.5s ease-out forwards;
+    }
+    
+    .score-popup.negative {
+        color: #ff6b6b;
+    }
+
+    @keyframes scoreFloat {
+      0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-40px) scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .combo-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      color: #ff6b6b;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 40;
+      text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+      animation: comboShow 2s ease-out forwards;
+    }
+
+    @keyframes comboShow {
+      0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+        opacity: 0;
+      }
+      30% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(0deg);
+        opacity: 1;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+        opacity: 0;
+      }
+    }
+
+    /* 遊戲結束畫面 */
+    .game-over {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 40px;
+      border-radius: 25px;
+      text-align: center;
+      z-index: 200;
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .game-over h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #ffd700;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .game-over .final-stats {
+      font-size: 1.5rem;
+      margin: 15px 0;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .game-over .rank {
+      font-size: 1.5rem;
+      color: #ff6b6b;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      color: white;
+      border: none;
+      padding: 15px 35px;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 25px;
+      font-weight: bold;
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+    }
+
+    /* 觸控反饋 */
+    .canvas-touch-feedback {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 215, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.6);
+      pointer-events: none;
+      z-index: 20;
+      animation: touchRipple 0.6s ease-out forwards;
+    }
+
+    @keyframes touchRipple {
+      0% {
+        transform: scale(0);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    .instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.9);
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 15;
+    }
+
+    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffd700;
+      font-size: 1.5rem;
+      text-align: center;
+      z-index: 100;
+    }
+
+    @media (max-width: 768px) {
+      .hud {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+        margin: 0 10px;
+      }
+      .stat-value {
+        font-size: 1.5rem;
+      }
+      .game-over {
+        padding: 30px 20px;
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle-bg" style="top: 10%; left: 20%; animation-delay: 1s; animation-duration: 12s;"></div>
+        <div class="particle-bg" style="top: 50%; left: 80%; animation-delay: 3s; animation-duration: 18s;"></div>
+        <div class="particle-bg" style="top: 30%; left: 5%; animation-delay: 5s; animation-duration: 14s;"></div>
+        <div class="particle-bg" style="top: 70%; left: 45%; animation-delay: 7s; animation-duration: 16s;"></div>
+        <div class="particle-bg" style="top: 5%; left: 60%; animation-delay: 9s; animation-duration: 20s;"></div>
+        <div class="particle-bg" style="top: 85%; left: 15%; animation-delay: 2s; animation-duration: 13s;"></div>
+        <div class="particle-bg" style="top: 40%; left: 95%; animation-delay: 4s; animation-duration: 17s;"></div>
+        <div class="particle-bg" style="top: 20%; left: 35%; animation-delay: 6s; animation-duration: 15s;"></div>
+        <div class="particle-bg" style="top: 65%; left: 70%; animation-delay: 8s; animation-duration: 19s;"></div>
+        <div class="particle-bg" style="top: 90%; left: 55%; animation-delay: 10s; animation-duration: 11s;"></div>
+        <div class="particle-bg" style="top: 15%; left: 75%; animation-delay: 0.5s; animation-duration: 14s;"></div>
+        <div class="particle-bg" style="top: 45%; left: 25%; animation-delay: 2.5s; animation-duration: 17s;"></div>
+        <div class="particle-bg" style="top: 80%; left: 90%; animation-delay: 4.5s; animation-duration: 13s;"></div>
+        <div class="particle-bg" style="top: 25%; left: 50%; animation-delay: 6.5s; animation-duration: 19s;"></div>
+        <div class="particle-bg" style="top: 60%; left: 10%; animation-delay: 8.5s; animation-duration: 15s;"></div>
+        <div class="particle-bg" style="top: 35%; left: 85%; animation-delay: 1.5s; animation-duration: 16s;"></div>
+        <div class="particle-bg" style="top: 75%; left: 30%; animation-delay: 3.5s; animation-duration: 18s;"></div>
+        <div class="particle-bg" style="top: 55%; left: 65%; animation-delay: 5.5s; animation-duration: 12s;"></div>
+        <div class="particle-bg" style="top: 95%; left: 40%; animation-delay: 7.5s; animation-duration: 20s;"></div>
+        <div class="particle-bg" style="top: 12%; left: 92%; animation-delay: 9.5s; animation-duration: 14s;"></div>
+        <div class="particle-bg" style="top: 48%; left: 12%; animation-delay: 0.8s; animation-duration: 16s;"></div>
+        <div class="particle-bg" style="top: 78%; left: 58%; animation-delay: 2.8s; animation-duration: 15s;"></div>
+        <div class="particle-bg" style="top: 22%; left: 48%; animation-delay: 4.8s; animation-duration: 17s;"></div>
+        <div class="particle-bg" style="top: 68%; left: 88%; animation-delay: 6.8s; animation-duration: 13s;"></div>
+        <div class="particle-bg" style="top: 38%; left: 22%; animation-delay: 8.8s; animation-duration: 19s;"></div>
+        <div class="particle-bg" style="top: 88%; left: 78%; animation-delay: 1.2s; animation-duration: 14s;"></div>
+        <div class="particle-bg" style="top: 8%; left: 38%; animation-delay: 3.2s; animation-duration: 18s;"></div>
+        <div class="particle-bg" style="top: 52%; left: 52%; animation-delay: 5.2s; animation-duration: 16s;"></div>
+        <div class="particle-bg" style="top: 72%; left: 8%; animation-delay: 7.2s; animation-duration: 12s;"></div>
+        <div class="particle-bg" style="top: 32%; left: 68%; animation-delay: 9.2s; animation-duration: 20s;"></div>
+    </div>
+  <canvas id="gameCanvas"></canvas>
+  
+  <div class="game-ui">
+    <div class="hud">
+      <div class="stat">
+        <div class="stat-label">🏮 分數</div>
+        <div class="stat-value" id="scoreValue">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">⏰ 時間</div>
+        <div class="stat-value" id="timeValue">60</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">🔥 連擊</div>
+        <div class="stat-value" id="comboValue">0</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="instructions">
+    點擊飛舞的天燈獲得分數！連續點擊可獲得連擊獎勵！
+  </div>
+  
+  <div class="loading" id="loadingScreen">
+    <p>正在載入遊戲...</p>
+  </div>
+
+<script>
+    class SkyLanternGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resizeCanvas();
+        this.loadingScreen = document.getElementById('loadingScreen');
+
+        this.lanterns = [];
+        this.score = 0;
+        this.combo = 0;
+        this.timeLeft = 60;
+        this.gameRunning = false;
+        this.comboTimer = null;
+        
+        // 遊戲統計數據
+        this.missedLanterns = 0;
+        this.hitLanterns = 0;
+        this.hitBalloons = 0;
+        this.totalTargets = 0;
+        this.comboHistory = [];
+        this.currentComboStreak = 0;
+
+        this.lanternImages = [];
+        this.maxBalloons = 10;
+        this.balloonsSpawned = 0;
+
+        this.initEvents();
+        this.loadLanternImages();
+      }
+
+      // 當圖片載入失敗時，建立一個基本的幾何天燈作為回退
+      createFallbackLantern() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 80;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+
+        const colors = ['#ff6b6b', '#feca57', '#00bfff', '#9b59b6', '#32cd32'];
+        const bodyColor = colors[Math.floor(Math.random() * colors.length)];
+
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.moveTo(40, 0);
+        ctx.quadraticCurveTo(80, 20, 80, 50);
+        ctx.quadraticCurveTo(80, 80, 40, 100);
+        ctx.quadraticCurveTo(0, 80, 0, 50);
+        ctx.quadraticCurveTo(0, 20, 40, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#f7f1e3';
+        ctx.fillRect(30, 95, 20, 5);
+
+        ctx.strokeStyle = '#feca57';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(40, 100);
+        ctx.lineTo(40, 105);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffed00';
+        ctx.beginPath();
+        ctx.arc(40, 105, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        const img = new Image();
+        img.src = canvas.toDataURL();
+        return img;
+      }
+      
+      // 載入天燈圖片，若失敗則使用回退機制
+      loadLanternImages() {
+        const lanternPaths = ['picture/1.png', 'picture/2.png', 'picture/3.png', 'picture/4.png', 'picture/5.png', 'picture/6.png'];
+        let loadedCount = 0;
+        const totalImages = lanternPaths.length;
+        
+        const checkLoadStatus = () => {
+          loadedCount++;
+          if (loadedCount === totalImages) {
+            this.loadingScreen.style.display = 'none';
+            this.startGame();
+          }
+        };
+
+        if (totalImages === 0) {
+          this.lanternImages.push(this.createFallbackLantern());
+          this.loadingScreen.style.display = 'none';
+          this.startGame();
+          return;
+        }
+
+        lanternPaths.forEach(path => {
+          const img = new Image();
+          img.onload = () => {
+            this.lanternImages.push(img);
+            checkLoadStatus();
+          };
+          img.onerror = () => {
+            console.warn(`圖片載入失敗: ${path}, 使用回退天燈。`);
+            this.lanternImages.push(this.createFallbackLantern());
+            checkLoadStatus();
+          };
+          img.src = path;
+        });
+      }
+
+      resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      initEvents() {
+        const handleInteraction = (x, y) => {
+          if (!this.gameRunning) return;
+          this.createTouchFeedback(x, y);
+          this.handleClick(x, y);
+        };
+
+        this.canvas.addEventListener('mousedown', (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          handleInteraction(x, y);
+        });
+
+        this.canvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const rect = this.canvas.getBoundingClientRect();
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          handleInteraction(x, y);
+        }, { passive: false });
+
+        window.addEventListener('resize', () => {
+          this.resizeCanvas();
+        });
+      }
+
+      createTouchFeedback(x, y) {
+        const feedback = document.createElement('div');
+        feedback.className = 'canvas-touch-feedback';
+        feedback.style.left = (x - 30) + 'px';
+        feedback.style.top = (y - 30) + 'px';
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => feedback.remove(), 600);
+      }
+
+      startGame() {
+        if (this.gameRunning) return;
+        this.gameRunning = true;
+        this.score = 0;
+        this.combo = 0;
+        this.timeLeft = 60;
+        this.lanterns = [];
+        
+        this.missedLanterns = 0;
+        this.hitLanterns = 0;
+        this.hitBalloons = 0;
+        this.totalTargets = 0;
+        this.balloonsSpawned = 0;
+        this.comboHistory = [];
+        this.currentComboStreak = 0;
+        
+        document.getElementById('scoreValue').textContent = this.score;
+        document.getElementById('timeValue').textContent = this.timeLeft;
+        document.getElementById('comboValue').textContent = this.combo;
+        
+
+        
+        this.startTimer();
+        this.startSpawning();
+        this.render();
+      }
+
+      startTimer() {
+        this.timer = setInterval(() => {
+          this.timeLeft--;
+          document.getElementById('timeValue').textContent = this.timeLeft;
+          
+          if (this.timeLeft <= 0) {
+            this.endGame();
+          }
+        }, 1000);
+      }
+
+  startSpawning() {
+  const spawnLoop = () => {
+    if (!this.gameRunning) return;
+
+    // 每波隨機數量：天燈 1~3 個，炸彈 0~1
+    const lanternCount = Math.floor(Math.random() * 3) + 1; // 1 ~ 3
+    const bombCount = Math.random() < 0.4 ? Math.floor(Math.random() * 2) : 0; // 0 or 1，40% 機率出現炸彈
+
+    for (let i = 0; i < lanternCount; i++) {
+      this.spawnLantern();
+    }
+    for (let i = 0; i < bombCount; i++) {
+      this.spawnBalloon();
+    }
+
+    const delay = Math.random() * 800 + 600;
+    this.spawnTimer = setTimeout(spawnLoop, delay);
+  };
+  spawnLoop();
+}
+
+
+     spawnLantern() {
+  const x = Math.random() * (this.canvas.width - 100) + 50;
+  const y = this.canvas.height + 100;
+  const speed = Math.random() * 1 + 1.5;
+
+  const lanternImg = this.lanternImages[Math.floor(Math.random() * this.lanternImages.length)];
+
+  this.lanterns.push({ 
+    x, 
+    y, 
+    speed,
+    img: lanternImg,
+    isLit: false,
+    scale: 0.8 + Math.random() * 0.4,
+    lifetime: 0,
+    rotation: 0,
+    rotationSpeed: 0,
+    isLantern: true
+  });
+
+  this.totalLanternsAppeared++; // 記錄天燈出現數
+  this.totalTargets++;          // 保留原有邏輯（如果別的地方有用）
+}
+
+      spawnBalloon() {
+  const x = Math.random() * (this.canvas.width - 60) + 30;
+  const y = this.canvas.height + 80;
+  const speed = Math.random() * 1.5 + 1.5;
+
+  this.lanterns.push({
+    x,
+    y,
+    speed,
+    isBalloon: true,
+    isLit: false,
+    scale: 0.8 + Math.random() * 0.4,
+    lifetime: 0,
+    rotation: 0,
+    rotationSpeed: 0
+  });
+
+  this.totalBombsAppeared++; 
+  this.balloonsSpawned = (this.balloonsSpawned || 0) + 1;
+  this.totalTargets++;
+}
+
+
+      render() {
+        if (!this.gameRunning) return;
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (let i = this.lanterns.length - 1; i >= 0; i--) {
+          const l = this.lanterns[i];
+
+          l.lifetime += 1;
+          l.y -= l.speed;
+
+          this.ctx.save();
+          
+          if (l.isBalloon) {
+              const balloonSize = 60 * l.scale;
+              this.ctx.translate(l.x + balloonSize / 2, l.y + balloonSize / 2);
+              this.ctx.font = `${balloonSize}px Arial`;
+              this.ctx.textAlign = 'center';
+              this.ctx.textBaseline = 'middle';
+              this.ctx.globalAlpha = 1.0;
+              this.ctx.fillText('💣', 0, 0);
+
+          } else {
+              const imgWidth = 80 * l.scale;
+              const imgHeight = 100 * l.scale;
+              this.ctx.translate(l.x + imgWidth / 2, l.y + imgHeight / 2);
+              this.ctx.rotate(l.rotation);
+              
+              if (l.isLit) {
+                this.ctx.globalAlpha = 1.0;
+                this.ctx.shadowColor = 'rgba(255, 255, 150, 0.8)';
+                this.ctx.shadowBlur = 15;
+              }
+
+              this.ctx.drawImage(l.img, -imgWidth / 2, -imgHeight / 2, imgWidth, imgHeight);
+
+              if (!l.isLit) {
+                this.ctx.globalCompositeOperation = 'source-atop';
+                this.ctx.globalAlpha = 0.6;
+                this.ctx.fillStyle = 'rgba(50, 50, 80, 0.7)';
+                this.ctx.fillRect(-imgWidth / 2, -imgHeight / 2, imgWidth, imgHeight);
+              }
+              this.ctx.globalCompositeOperation = 'source-over';
+          }
+          
+          this.ctx.restore();
+
+          if (l.y < -150) {
+            if (l.isLantern && !l.isLit) {
+              this.missedLanterns++;
+              this.recordComboBreak();
+            }
+            this.lanterns.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(() => this.render());
+      }
+
+      // 紀錄連擊中斷
+      recordComboBreak() {
+        if (this.currentComboStreak > 0) {
+          this.comboHistory.push(this.currentComboStreak);
+          this.currentComboStreak = 0;
+        }
+        this.combo = 0;
+        document.getElementById('comboValue').textContent = '0';
+      }
+
+      handleClick(x, y) {
+        if (!this.gameRunning) return;
+
+        let hitDetected = false;
+
+        for (let i = this.lanterns.length - 1; i >= 0; i--) {
+          const l = this.lanterns[i];
+          const hitboxWidth = l.isBalloon ? 60 * l.scale : 80 * l.scale;
+          const hitboxHeight = l.isBalloon ? 60 * l.scale : 100 * l.scale;
+          
+          if (x >= l.x && x <= l.x + hitboxWidth && 
+              y >= l.y && y <= l.y + hitboxHeight && !l.isLit) {
+            
+            hitDetected = true;
+            
+            if (l.isBalloon) {
+                // 點到氣球，扣分並中斷連擊
+                this.score -= 10;
+                this.hitBalloons++;
+                this.recordComboBreak();
+                this.showScorePopup(l.x + hitboxWidth / 2, l.y + hitboxHeight / 2, -10, true);
+                this.lanterns.splice(i, 1);
+            } else {
+                // 點到天燈，正常加分和連擊
+                l.isLit = true;
+                this.hitLanterns++;
+                this.combo++;
+                this.currentComboStreak++;
+                
+                if (this.comboTimer) clearTimeout(this.comboTimer);
+                this.comboTimer = setTimeout(() => {
+                  this.recordComboBreak();
+                }, 2000);
+
+                let points = 10;
+                if (this.combo >= 10) points = 50;
+                else if (this.combo >= 5) points = 30;
+                else if (this.combo >= 3) points = 20;
+
+                this.score += points;
+                this.showScorePopup(l.x + hitboxWidth / 2, l.y + hitboxHeight / 2, points);
+                this.createExplosion(l.x + hitboxWidth / 2, l.y + hitboxHeight / 2);
+                
+                if (this.combo >= 5 && this.combo % 5 === 0) {
+                  this.showComboIndicator();
+                }
+            }
+            
+            document.getElementById('scoreValue').textContent = this.score;
+            document.getElementById('comboValue').textContent = this.combo;
+           
+            break;
+          }
+        }
+
+        if (!hitDetected && this.combo > 0) {
+          this.recordComboBreak();
+        }
+      }
+
+      showScorePopup(x, y, points, isNegative = false) {
+        const popup = document.createElement('div');
+        popup.className = `score-popup ${isNegative ? 'negative' : ''}`;
+        popup.textContent = `${points > 0 ? '+' : ''}${points}`;
+        popup.style.left = x + 'px';
+        popup.style.top = y + 'px';
+        document.body.appendChild(popup);
+        
+        setTimeout(() => popup.remove(), 1500);
+      }
+
+      showComboIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'combo-indicator';
+        indicator.textContent = `🔥 ${this.combo}x 連擊！`;
+        document.body.appendChild(indicator);
+        
+        setTimeout(() => indicator.remove(), 2000);
+      }
+
+      createExplosion(x, y) {
+        const colors = ['#ffd700', '#ff6347', '#ff69b4', '#00bfff', '#32cd32'];
+        
+        for (let i = 0; i < 8; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = x + 'px';
+          particle.style.top = y + 'px';
+          particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+          particle.style.transform = `rotate(${i * 45}deg)`;
+          document.body.appendChild(particle);
+          
+          setTimeout(() => particle.remove(), 1200);
+        }
+      }
+
+calculateGameStats() {
+  if (this.currentComboStreak > 0) {
+    this.comboHistory.push(this.currentComboStreak);
+  }
+
+  const totalCombos = this.comboHistory.length;
+  const totalComboLength = this.comboHistory.reduce((sum, len) => sum + len, 0);
+  const avgCombo = totalCombos > 0 ? (totalComboLength / totalCombos).toFixed(1) : "0.0";
+  
+  const totalLanternsSpawned = this.totalLanternsAppeared; // 出現過的天燈數（總目標數）
+  const totalBombsSpawned = this.totalBombsAppeared;
+
+  // 命中率 = 成功點擊天燈 / 出現天燈
+  let accuracy = "0.0";
+  if (totalLanternsSpawned > 0) {
+    accuracy = ((this.hitLanterns / totalLanternsSpawned) * 100).toFixed(1);
+  }
+
+  // 失敗率 = (點炸彈 + 漏天燈) / 出現天燈
+  let failureRate = "0.0";
+  if (totalLanternsSpawned > 0) {
+    failureRate = (((this.hitBalloons + this.missedLanterns) / totalLanternsSpawned) * 100).toFixed(1);
+  }
+
+  return {
+    accuracy,
+    avgCombo,
+    totalCombos,
+    totalTargets: this.totalTargets,
+    hitLanterns: this.hitLanterns,
+    hitBalloons: this.hitBalloons,
+    missedLanterns: this.missedLanterns,
+    totalLanternsSpawned,
+    totalBombsSpawned,
+    failureRate
+  };
+}
+
+      endGame() {
+        this.gameRunning = false;
+        clearInterval(this.timer);
+        if (this.spawnTimer) clearTimeout(this.spawnTimer);
+        
+        this.showGameOverScreen();
+      }
+
+showGameOverScreen() {
+  this.gameRunning = false;
+  clearInterval(this.timerInterval);
+  clearTimeout(this.spawnTimer);
+
+  // 計算統計數據
+  const stats = this.calculateGameStats();
+
+  // 存到 localStorage，方便 gameover.html 讀取
+  localStorage.setItem("score", this.score);
+  localStorage.setItem("accuracy", stats.accuracy);        // 🎯 命中率
+  localStorage.setItem("failureRate", stats.failureRate);  // ❌ 失敗率
+  localStorage.setItem("avgCombo", stats.avgCombo);
+  localStorage.setItem("totalCombos", stats.totalCombos);
+  localStorage.setItem("totalLanternsSpawned", stats.totalLanternsSpawned);
+  localStorage.setItem("totalBombsSpawned", stats.totalBombsSpawned);
+  localStorage.setItem("hitLanterns", stats.hitLanterns);
+  localStorage.setItem("hitBalloons", stats.hitBalloons);
+  localStorage.setItem("missedLanterns", stats.missedLanterns);
+
+  // 跳轉到結束畫面
+  window.location.href = "gameover.html";
+}
+    }
+
+// 啟動遊戲
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        new SkyLanternGame();
+      } catch (err) {
+        console.error('❌ 遊戲啟動失敗：', err);
+        alert('遊戲啟動失敗，請重新整理頁面');
+      }
+    });
+
+    // 防止頁面滾動和縮放
+    document.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gesturestart', (e) => {
+      e.preventDefault();
+    });
+</script>
+</body>
+</html>

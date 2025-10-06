@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>綜合遊戲結果</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: #eaf0f6;
+      padding: 30px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    #reportContainer {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      max-width: 850px;
+      margin: 20px auto;
+    }
+    .user-info {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    .user-info button {
+      margin-left: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .game-section {
+      margin-top: 30px;
+    }
+    .game-section h2 {
+      color: #2980b9;
+      border-bottom: 2px solid #2980b9;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f8f8f8;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .buttons button {
+      padding: 10px 18px;
+      margin: 0 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    #reportHeader {
+      margin-bottom: 20px;
+    }
+    #reportHeader h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body onload="renderResult()">
+  <div class="user-info">
+    <span id="usernameDisplay">玩家</span>
+    <button onclick="logout()">登出</button>
+  </div>
+
+  <h1>綜合遊戲結果報表</h1>
+  <div id="reportContainer">
+    <div id="reportHeader">
+      <h3>使用者：<span id="reportUsername">玩家</span></h3>
+      <h3>日期：<span id="reportDate">—</span></h3>
+    </div>
+
+    <!-- 各遊戲表格 -->
+    <div class="game-section" id="flipSection">
+      <h2>翻牌遊戲</h2>
+      <table>
+        <thead>
+          <tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th></tr>
+        </thead>
+        <tbody id="flipBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th><th id="flip_totalTime">0</th><th id="flip_totalHint">0</th></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="game-section" id="lanternSection">
+      <h2>點擊天燈</h2>
+      <table>
+        <tbody>
+          <tr><th>命中率</th><td id="lantern_accuracy">0%</td></tr>
+          <tr><th>失敗率</th><td id="lantern_failure">0%</td></tr>
+          <tr><th>排名</th><td id="lantern_rank">—</td></tr>
+          <tr><th>分數</th><td id="lantern_score">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="game-section" id="matchSection">
+      <h2>數字對對碰</h2>
+      <table>
+        <thead><tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th><th>錯誤次數</th></tr></thead>
+        <tbody id="matchBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th>
+            <th id="match_totalTime">0</th>
+            <th id="match_totalHint">0</th>
+            <th id="match_totalWrong">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="game-section" id="lineSection">
+      <h2>數字連線</h2>
+      <table>
+        <thead><tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th><th>錯誤次數</th></tr></thead>
+        <tbody id="lineBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th>
+            <th id="line_totalTime">0</th>
+            <th id="line_totalHint">0</th>
+            <th id="line_totalWrong">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button onclick="goToPractice()" id="btnPractice" style="display:none;">再練習</button>
+    <button onclick="goToTest()" id="btnTest" style="display:none;">進入測試</button>
+  </div>
+
+  <script>
+    const username = localStorage.getItem('nickname') || '玩家';
+    document.getElementById('usernameDisplay').textContent = `您好，${username}`;
+    document.getElementById('reportUsername').textContent = username;
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
+
+    function logout() {
+      localStorage.clear();
+      location.href = 'index.html';
+    }
+
+    function goToTest() {
+      localStorage.setItem("test", "測驗");
+      location.href = 'game/number_game2.html';
+    }
+
+    function goToPractice() {
+      localStorage.setItem("test", "練習");
+      location.href = 'game/number_game1.html';
+    }
+
+    function renderResult() {
+      const level = localStorage.getItem("test");
+      if (level === "練習" || !level) {
+        document.getElementById("reportContainer").style.display = "none";
+        document.getElementById("btnPractice").style.display = "inline-block";
+        document.getElementById("btnTest").style.display = "inline-block";
+        return;
+      }
+
+      document.getElementById("reportContainer").style.display = "block";
+      document.getElementById("btnPractice").style.display = "none";
+      document.getElementById("btnTest").style.display = "none";
+
+      // 翻牌
+      const t1 = +localStorage.getItem("reminderTime") || 0;
+      const t2 = +localStorage.getItem("reminderTime2") || 0;
+      const t3 = +localStorage.getItem("reminderTime3") || 0;
+      const h1 = +localStorage.getItem("reminderCount") || 0;
+      const h2 = +localStorage.getItem("reminderCount1") || 0;
+      const h3 = +localStorage.getItem("reminderCount2") || 0;
+      const flipBody = document.getElementById("flipBody");
+      flipBody.innerHTML = "";
+      [["第一關", t1.toFixed(1), h1], ["第二關", t2.toFixed(1), h2], ["第三關", t3.toFixed(1), h3]]
+        .forEach(arr => {
+          const tr = document.createElement("tr");
+          arr.forEach(val => {
+            const td = document.createElement("td");
+            td.textContent = val;
+            tr.appendChild(td);
+          });
+          flipBody.appendChild(tr);
+        });
+      document.getElementById("flip_totalTime").textContent = (t1 + t2 + t3).toFixed(1);
+      document.getElementById("flip_totalHint").textContent = h1 + h2 + h3;
+
+      // 天燈
+      const acc = localStorage.getItem("accuracy") || "0";
+      const fail = localStorage.getItem("failureRate") || "0";
+      const rank = localStorage.getItem("rank") || "—";
+      const score = localStorage.getItem("score") || "—";
+      document.getElementById("lantern_accuracy").textContent = acc + "%";
+      document.getElementById("lantern_failure").textContent = fail + "%";
+      document.getElementById("lantern_rank").textContent = rank;
+      document.getElementById("lantern_score").textContent = score;
+
+      // 數字對對碰
+      const mt = [ +localStorage.getItem("Time") || 0,
+                   +localStorage.getItem("Time2") || 0,
+                   +localStorage.getItem("Time3") || 0 ];
+      const mh = [ +localStorage.getItem("hintCount1") || 0,
+                   +localStorage.getItem("hintCount2") || 0,
+                   +localStorage.getItem("hintCount3") || 0 ];
+      const mw = [ +localStorage.getItem("count2") || 0,
+                   +localStorage.getItem("count3") || 0,
+                   +localStorage.getItem("count4") || 0 ];
+      const matchBody = document.getElementById("matchBody");
+      matchBody.innerHTML = "";
+      [["第一關", mt[0].toFixed(1), mh[0], mw[0]],
+       ["第二關", mt[1].toFixed(1), mh[1], mw[1]],
+       ["第三關", mt[2].toFixed(1), mh[2], mw[2]]]
+        .forEach(arr => {
+          const tr = document.createElement("tr");
+          arr.forEach(val => {
+            const td = document.createElement("td");
+            td.textContent = val;
+            tr.appendChild(td);
+          });
+          matchBody.appendChild(tr);
+        });
+      document.getElementById("match_totalTime").textContent = mt.reduce((a,b)=>a+b,0).toFixed(1);
+      document.getElementById("match_totalHint").textContent = mh.reduce((a,b)=>a+b,0);
+      document.getElementById("match_totalWrong").textContent = mw.reduce((a,b)=>a+b,0);
+
+      // 數字連線
+      const lt = [ +localStorage.getItem("duration0") || 0,
+                   +localStorage.getItem("duration1") || 0,
+                   +localStorage.getItem("duration2") || 0,
+                   +localStorage.getItem("duration3") || 0 ];
+      const lh = [ +localStorage.getItem("hintCount0") || 0,
+                   +localStorage.getItem("hintCount1") || 0,
+                   +localStorage.getItem("hintCount2") || 0,
+                   +localStorage.getItem("hintCount3") || 0 ];
+      const lw = [ +localStorage.getItem("wrongClicks0") || 0,
+                   +localStorage.getItem("wrongClicks1") || 0,
+                   +localStorage.getItem("wrongClicks2") || 0,
+                   +localStorage.getItem("wrongClicks3") || 0 ];
+      const lineBody = document.getElementById("lineBody");
+      lineBody.innerHTML = "";
+      lt.forEach((t, i) => {
+        const tr = document.createElement("tr");
+        [ `第 ${i+1} 關`, t.toFixed(1), lh[i], lw[i] ].forEach(val => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.appendChild(td);
+        });
+        lineBody.appendChild(tr);
+      });
+      document.getElementById("line_totalTime").textContent = lt.reduce((a,b)=>a+b,0).toFixed(1);
+      document.getElementById("line_totalHint").textContent = lh.reduce((a,b)=>a+b,0);
+      document.getElementById("line_totalWrong").textContent = lw.reduce((a,b)=>a+b,0);
+
+      setTimeout(() => {
+        exportReportAsPDF();
+      }, 500);
+    }
+
+    async function exportReportAsPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF("p", "mm", "a4");
+
+      const container = document.getElementById("reportContainer");
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const imgProps = doc.getImageProperties(imgData);
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      const fileName = `測驗報表_${username}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+    }
+  </script>
+</body>
+</html>

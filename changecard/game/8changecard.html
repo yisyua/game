@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲介面 (記憶翻牌挑戰 - 16宮格)</title>
+    <link rel="stylesheet" href="static/style7.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 基礎重置與字體設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* 綠色漸層背景與浮動動畫 */
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(129, 199, 132, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(165, 214, 167, 0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+            background-size: 800px 800px, 600px 600px, 400px 400px, 100% 100%;
+            background-attachment: fixed;
+            animation: backgroundFloat 15s ease-in-out infinite;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%; }
+            33% { background-position: 30% 30%, 70% 70%, 80% 20%, 0% 0%; }
+            66% { background-position: 70% 10%, 30% 90%, 20% 80%, 0% 0%; }
+        }
+
+        /* --- 主要內容容器與標題 (靠上顯示) --- */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 頂部邊距進一步減少，更靠上 */
+            padding: 5px 15px 30px; 
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px; 
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .main-title {
+            font-size: 3rem; /* 標題再縮小一點 */
+            font-weight: 900;
+            color: #2e7d32; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px; 
+            font-family: 'Noto Serif TC', serif;
+        }
+        
+        /* 內容區塊的白色卡片效果 (包裹卡片網格) */
+        .content-card {
+            background: 
+                linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 255, 248, 0.7));
+            backdrop-filter: blur(10px);
+            border-radius: 20px; /* 圓角縮小 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 15px 40px rgba(76, 175, 80, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            /* 縮小內邊距 */
+            padding: 15px; 
+            /* **【調整 1】進一步縮小容器最大寬度** */
+            max-width: 550px; 
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- 遊戲卡片網格與按鈕樣式 (應用於 form) --- */
+form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 原本 8，改成 6 */
+  gap: 15px;
+}
+.content-card {
+    max-width: 700px; /* ✅ 原本是 550px，給它多一點空間 */
+    width: 95%;
+}
+
+.card-button {
+    width: 100%;
+    height: 100px; /* ✅ 從 80px 調大到 100px */
+    font-size: 2.5rem; /* ✅ 字體也略大一點 */
+    background-color: #f0fff0;
+    border: none;
+    border-radius: 8px;
+    font-size: 2rem;
+    color: #4CAF50;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1), inset 0 0 5px rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 3px;
+}
+
+        .card-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        /* 匹配的圖片大小調整 */
+        .card-button img {
+            max-width: 80%; /* 圖片佔比稍微縮小 */
+            max-height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* --- 提示按鈕樣式 (右上角) --- */
+        #hintButton {
+            position: absolute;
+            top: 10px; 
+            right: 10px; 
+            z-index: 10;
+            
+            background: linear-gradient(45deg, #FFC107, #FF9800);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 15px; /* 按鈕尺寸縮小 */
+            font-size: 1rem; /* 字體縮小 */
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(255, 152, 0, 0.5);
+        }
+
+        /* 遊戲計時器樣式 */
+        #timer1 {
+            font-size: 1.6rem; 
+            margin-bottom: 5px; 
+        }
+
+        /* 隱藏的計時器和次數容器樣式 */
+        #timer-container {
+            font-size: 1rem;
+            margin-top: -5px; 
+            margin-bottom: 5px;
+        }
+
+        /* --- 橫向平板優化 (Media Query) --- */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .main-container {
+                padding-top: 5px; 
+            }
+            
+            .main-title {
+                font-size: 3.2rem;
+            }
+
+            .content-card {
+                /* 橫向模式下，保持較小的寬度以適應更多垂直內容 */
+                max-width: 600px; 
+                padding: 20px;
+            }
+
+            form {
+                gap: 10px; 
+            }
+
+            .card-button {
+                font-size: 2.5rem; 
+            }
+
+            #hintButton {
+                top: 15px; 
+                right: 15px;
+                padding: 8px 18px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body onload="previewAllCards()">
+
+    <div class="main-container">
+        <div class="game-header">
+            <div id="timer-container" style="display:none;">
+                時間: <span id="timer2">0</span> 秒<br>
+                翻開提醒次數: <span id="count2">0</span> 次
+            </div>
+            
+            <span id="timer1" style="display:none;"></span>
+        </div>
+
+        <div class="content-card">
+            <form id="card-grid">
+                <button class="card-button" id="option1" type="button">?</button>
+                <button class="card-button" id="option2" type="button">?</button>
+                <button class="card-button" id="option3" type="button">?</button>
+                <button class="card-button" id="option4" type="button">?</button>
+                <button class="card-button" id="option5" type="button">?</button>
+                <button class="card-button" id="option6" type="button">?</button>
+                <button class="card-button" id="option7" type="button">?</button>
+                <button class="card-button" id="option8" type="button">?</button>
+                <button class="card-button" id="option9" type="button">?</button>
+                <button class="card-button" id="option10" type="button">?</button>
+                <button class="card-button" id="option11" type="button">?</button>
+                <button class="card-button" id="option12" type="button">?</button>
+                <button class="card-button" id="option13" type="button">?</button>
+                <button class="card-button" id="option14" type="button">?</button>
+                <button class="card-button" id="option15" type="button">?</button>
+                <button class="card-button" id="option16" type="button">?</button>
+            </form>
+        </div>
+    </div>
+    
+    <button id="hintButton" disabled>提示鍵</button>
+
+
+<script>
+    const emojis = [
+      '../changecard_pi1.PNG',
+      '../changecard_pi2.PNG',
+      '../changecard_pi3.PNG',
+      '../changecard_pi4.PNG',
+      '../changecard_pi5.PNG',
+      '../changecard_pi6.PNG',
+      '../changecard_pi7.PNG',
+      '../changecard_pi8.PNG',
+      '../changecard_pi1.PNG',
+      '../changecard_pi2.PNG',
+      '../changecard_pi3.PNG',
+      '../changecard_pi4.PNG',
+      '../changecard_pi5.PNG',
+      '../changecard_pi6.PNG',
+      '../changecard_pi7.PNG',
+      '../changecard_pi8.PNG'
+    ];
+    const buttons = [];
+    for(let i=1; i<=16; i++){
+        buttons.push(document.getElementById('option'+i));
+    }
+
+    let shuffled = [];
+    let card = [], card2 = [], matchedCount = 0;
+    let count = 0, countdown = 0;
+    let interval;
+    let isRevealing = false;
+    const hintButton = document.getElementById("hintButton");
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function showCard(button, content) {
+      if (content === "?") {
+        button.innerHTML = "?";
+      } else {
+        // 使用圖片標籤顯示圖案
+        button.innerHTML = `<img src="${content}" alt="card">`;
+      }
+    }
+
+    function startHintCountdown() {
+      // 首次點擊後禁用，並在 5 秒後重新啟用
+      hintButton.disabled = false; // 遊戲開始後先啟用
+    }
+
+    function previewAllCards() {
+      shuffled = shuffle([...emojis]);
+      buttons.forEach((btn, i) => {
+        showCard(btn, shuffled[i]);
+        btn.disabled = true;
+      });
+      // 確保 timer1 顯示
+      document.getElementById("timer1").style.display = 'block';
+
+      let previewCountdown = 5;
+
+      const previewInterval = setInterval(() => {
+        previewCountdown--;
+        if (previewCountdown === 0) {
+          clearInterval(previewInterval);
+    
+
+          setTimeout(() => {
+              // 隱藏遊戲開始提示，正式開始遊戲
+              document.getElementById("timer1").style.display = 'none';
+              // 顯示隱藏的計時器/次數容器
+              document.getElementById("timer-container").style.display = 'block';
+
+              buttons.forEach(btn => {
+                showCard(btn, "?");
+                btn.disabled = false;
+              });
+
+              // 開始遊戲計時 (暗中計時)
+              interval = setInterval(() => {
+                countdown++;
+                document.getElementById("timer2").innerText = countdown;
+                localStorage.setItem("reminderTime3", countdown);
+              }, 1000);
+
+              // 啟用提示鍵
+              startHintCountdown();
+          }, 1000);
+        }
+      }, 1000);
+    }
+
+    function startGame(button, index) {
+      if (isRevealing) return;
+      if (card.length < 2 && !card2.includes(button) && !button.classList.contains("matched")) {
+        showCard(button, shuffled[index]);
+        card.push(shuffled[index]);
+        card2.push(button);
+        button.disabled = true; // 翻開時禁用
+
+        if (card.length === 2) {
+            isRevealing = true; // 鎖定點擊
+          setTimeout(() => {
+            if (card[0] === card[1]) {
+              // 配對成功
+              card2.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add("matched");
+              });
+              matchedCount += 2;
+              if (matchedCount === emojis.length) {
+                clearInterval(interval);
+                // 使用 reminderCount3 儲存 16 宮格的提示次數
+                localStorage.setItem("reminderCount3", count);
+                // 導向 changecardend.html
+                location.href = "../changecardend.html";  
+              }
+            } else {
+              // 配對失敗，翻回去
+              card2.forEach(btn => showCard(btn, "?"));
+            }
+            // 重置狀態
+            card = [];
+            card2 = [];
+            isRevealing = false;
+              // 重新啟用未配對的卡片
+            buttons.forEach(btn => {
+                if (!btn.classList.contains("matched")) {
+                    btn.disabled = false;
+                }
+            });
+          }, 500);
+        }
+      }
+    }
+
+    hintButton.addEventListener("click", () => {
+      if (isRevealing) return;
+      isRevealing = true;
+      hintButton.disabled = true; // 立即禁用提示鍵
+
+      count++;
+      document.getElementById("count2").innerText = count;
+      localStorage.setItem("reminderCount3", count);
+
+      // 翻開所有未配對的卡片
+      buttons.forEach((btn, i) => {
+        if (!btn.classList.contains("matched")) {
+          showCard(btn, shuffled[i]);
+          btn.disabled = true;
+        }
+      });
+
+      setTimeout(() => {
+        // 蓋回未配對的卡片
+        buttons.forEach((btn) => {
+          if (!btn.classList.contains("matched")) {
+            showCard(btn, "?");
+            btn.disabled = false;
+          }
+        });
+        isRevealing = false;
+        // 啟動 5 秒冷卻
+        setTimeout(() => {
+            hintButton.disabled = false;
+        }, 5000);
+      }, 5000);
+    });
+
+    buttons.forEach((btn, i) => {
+      btn.addEventListener("click", () => startGame(btn, i));
+    });
+
+</script>
+</body>
+</html>

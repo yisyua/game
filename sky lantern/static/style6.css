@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #F0E5F4;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    margin-bottom: 30px;
+    font-size: 36px;
+    color: #333;
+    text-align: right;
+
+  }
+  .light {
+    width: 60px;
+    height: 60px;
+    background-color: #aaa; /* 外圈淺灰 */
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .light::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 36px;
+    height: 36px;
+    background-color: #555; /* 內圈深灰 */
+    border-radius: 50%;
+  }
+    
+    .light.on {
+      background-color: yellow;
+      box-shadow: 0 0 15px #ff0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .finger {
+      position: absolute;
+      top: 270px;
+      right: 635px;
+      font-size: 48px;
+      transform: rotate(-30deg);
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    button {
+      background-color: #6a4caf;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #aaa;
+    }
+    .light1 {
+      font-size: 50px;
+      cursor: pointer;
+    }    
+  

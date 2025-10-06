@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>遊戲結果 - 記憶翻牌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 全局設定與背景 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background-color: #e8f5e9; /* 淺綠色背景 */
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            position: relative;
+        }
+        
+        /* 增加綠色光點背景效果 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 90%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 90% 10%, rgba(129, 199, 132, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* --- 主要內容容器 --- */
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(46, 125, 50, 0.2);
+            position: relative;
+            z-index: 1;
+            transform: translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            color: #388e3c; /* 較深的綠色標題 */
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        /* --- 結果總結區塊 --- */
+        .result-box1 {
+            background: linear-gradient(135deg, #a5d6a7, #66bb6a); /* 綠色漸層 */
+            color: #fff;
+            padding: 25px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            box-shadow: 0 8px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .result-box1 div {
+            font-size: 1.6rem;
+            margin: 10px 0;
+        }
+
+        .result-box1 span {
+            font-size: 2.5rem; /* 突顯總數據 */
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        /* --- 詳細數據區塊 (預設隱藏) --- */
+        .result-box-detail {
+            background-color: #f8fcf8;
+            color: #555;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid #dcdcdc;
+            text-align: left;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .result-box-detail strong {
+            color: #388e3c;
+            font-weight: 700;
+        }
+        
+        /* 顯示/隱藏詳細數據的按鈕 */
+        #toggleDetailBtn {
+            font-size: 1rem;
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            color: #555;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+            display: block;
+            width: 100%;
+        }
+        #toggleDetailBtn:hover {
+            background-color: #ccc;
+        }
+
+        /* --- 按鈕區塊 --- */
+        .buttons {
+            display: block; /* 改為 block 方便單一按鈕置中 */
+            margin-top: 30px;
+        }
+        
+        /* 統一設定按鈕樣式 */
+        .next-game-btn { /* 新增 class 名稱 */
+            font-size: 1.5rem; /* 稍微大一點 */
+            padding: 15px 30px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-transform: none;
+            white-space: nowrap;
+            /* 下一個遊戲按鈕的樣式 */
+            background-color: #4caf50; /* 成功綠 */
+            color: white;
+            width: 100%; /* 讓它佔滿寬度 */
+            max-width: 400px; /* 限制最大寬度，避免過寬 */
+            margin: 0 auto; /* 置中 */
+            display: block;
+        }
+        
+        .next-game-btn:hover {
+            background-color: #388e3c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* --- 用戶資訊 (隱藏) --- */
+        .user-info {
+            /* 保持原樣式但強制隱藏 */
+            display: none !important; 
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 1.2rem;
+            background-color: #ffffffed;
+            padding: 12px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            max-width: 350px;
+            z-index: 10;
+        }
+
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+                max-width: 95%;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+            .result-box1 span {
+                font-size: 2rem;
+            }
+            .result-box1 div {
+                font-size: 1.4rem;
+            }
+            .buttons {
+                margin-top: 20px;
+            }
+            .next-game-btn {
+                font-size: 1.3rem;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body onload="end()">
+    <div class="user-info" title="用戶資訊" style="display: none;"> 
+        <span id="username"></span>
+        <button onclick="logout()">登出</button>
+    </div>
+    
+    <div class="container">
+        <h1>記憶翻牌挑戰 - 結算</h1>
+        
+        <div class="result-box1">
+            <div>🎉 您的總成績 🎉</div>
+            <div>
+                總用時：<span id="totalTime">0</span> 秒
+            </div>
+            <div>
+                總提醒次數：<span id="totalCount">0</span> 次
+            </div>
+        </div>
+        
+        <button id="toggleDetailBtn" onclick="toggleDetail()">顯示詳細數據</button>
+        <div class="result-box-detail" id="detailBox" style="display: none;">
+            <div>關卡 1 (4對卡牌) 用時：<strong id="timeL1">0</strong> 秒 / 提醒次數：<strong id="countL1">0</strong> 次</div>
+            <div>關卡 2 (6對卡牌) 用時：<strong id="timeL2">0</strong> 秒 / 提醒次數：<strong id="countL2">0</strong> 次</div>
+            <div>關卡 3 (8對卡牌) 用時：<strong id="timeL3">0</strong> 秒 / 提醒次數：<strong id="countL3">0</strong> 次</div>
+        </div>
+
+        <div class="buttons">
+             <button class="next-game-btn" onclick="goToNextGame()" id="gamebtn">下一個遊戲</button> 
+        </div>
+    </div>
+
+    <script>
+    // 讀取用戶資訊
+    const username = localStorage.getItem("nickname") || "訪客";
+    const hobby = localStorage.getItem("other") || localStorage.getItem("hobby");
+
+    const getTime1 = parseInt(localStorage.getItem("reminderTime")) || 0;
+    const getTime2 = parseInt(localStorage.getItem("reminderTime2")) || 0;
+    const getTime3 = parseInt(localStorage.getItem("reminderTime3")) || 0;
+
+    function getReminderCount(level) {
+        const possibleKeys = [
+            `reminderCount${level === 1 ? '' : level === 2 ? '1' : '2'}`,
+            `reminderCount_level${level}`,
+            `reminderCount${level}`,
+            `level${level}_reminderCount`
+        ];
+        
+        for (let key of possibleKeys) {
+            const value = localStorage.getItem(key);
+            if (value !== null && !isNaN(parseInt(value))) {
+                return parseInt(value);
+            }
+        }
+        return 0;
+    }
+
+    const getCount1 = parseInt(localStorage.getItem("reminderCount")) || 0;
+    const getCount2 = parseInt(localStorage.getItem("reminderCount2")) || 0;
+    const getCount3 = parseInt(localStorage.getItem("reminderCount3")) || 0;
+
+    const totalTime = getTime1 + getTime2 + getTime3;
+    const totalCount = getCount1 + getCount2 + getCount3;
+
+    let level = localStorage.getItem("test") || "練習";
+
+    function toggleDetail() {
+        const detailBox = document.getElementById("detailBox");
+        const button = document.getElementById("toggleDetailBtn");
+        if (detailBox.style.display === "none") {
+            detailBox.style.display = "block";
+            button.textContent = "隱藏詳細數據";
+        } else {
+            detailBox.style.display = "none";
+            button.textContent = "顯示詳細數據";
+        }
+    }
+
+    function goToNextGame() {
+        if (level === "測驗" && getTime1 > 0 && getTime2 > 0 && getTime3 > 0) {
+            saveGameResult(); 
+        } else {
+            clearGameData();
+        }
+        localStorage.removeItem("test"); 
+        location.href='../sky lantern/Home screen.html';
+    }
+
+    function end() {
+        document.getElementById("username").textContent = `您好，${username}`;
+        document.getElementById("totalTime").textContent = totalTime;
+        document.getElementById("totalCount").textContent = totalCount;
+        document.getElementById("timeL1").textContent = getTime1;
+        document.getElementById("countL1").textContent = getCount1;
+        document.getElementById("timeL2").textContent = getTime2;
+        document.getElementById("countL2").textContent = getCount2;
+        document.getElementById("timeL3").textContent = getTime3;
+        document.getElementById("countL3").textContent = getCount3;
+
+        if (level === "測驗" && getTime1 > 0 && getTime2 > 0 && getTime3 > 0) {
+            console.log("測驗模式數據完整，準備儲存。");
+        } else if (level === "測驗") {
+            console.log("測驗模式數據不完整，清除。");
+            clearGameData();
+        }
+    }
+
+    window.onload = end;
+
+    function saveGameResult() {
+        const newRecord = {
+            遊戲玩家名稱: username,
+            嗜好: hobby,
+            遊戲名稱: "翻牌",
+            第一關用時: getTime1,
+            第一關提醒次數: getCount1,
+            第二關用時: getTime2,
+            第二關提醒次數: getCount2,
+            第三關用時: getTime3,
+            第三關提醒次數: getCount3,
+            總時間加總: totalTime,
+            總提醒次數: totalCount,
+            完成時間: new Date().toLocaleString()
+        };
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const tableKey = `flipcard_測驗_${dateStr}`;
+
+        let tableList = JSON.parse(localStorage.getItem("flipCardTables") || "[]");
+
+        if (!tableList.includes(tableKey)) {
+            tableList.push(tableKey);
+            localStorage.setItem("flipCardTables", JSON.stringify(tableList));
+        }
+
+        let oldRecords = JSON.parse(localStorage.getItem(tableKey) || "[]");
+        oldRecords.push(newRecord);
+        localStorage.setItem(tableKey, JSON.stringify(oldRecords));
+
+        console.log("測驗結果已儲存:", newRecord);
+        clearGameData();
+    }
+
+    function clearGameData() {
+        const keysToRemove = [
+            "reminderTime", "reminderTime2", "reminderTime3",
+            "reminderCount", "reminderCount1", "reminderCount2",
+            "reminderCount_level1", "reminderCount_level2", "reminderCount_level3",
+            "level1_reminderCount", "level2_reminderCount", "level3_reminderCount"
+        ];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        localStorage.removeItem("test");
+    }
+
+    function clearData() {
+        localStorage.clear();
+    }
+
+    function logout() {
+        clearData();
+        location.href = "../index.html";
+    }
+
+    // 🔁 修正後的按鈕行為與資料送出
+   const gamebtn = document.getElementById('gamebtn');
+
+gamebtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    gamebtn.innerHTML = '載入中...';
+    gamebtn.disabled = true;
+    const user_name = localStorage.getItem('nickname') ; // 預設為 0 或其他適當值
+    const age = localStorage.getItem('age');
+    try {
+        
+        const res = await fetch("/flop", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+            user_id: user_name,   
+            age: age,           
+            total_time: totalTime || 0 ,
+            total_reminders: totalCount || 0,
+            time_per_level1: getTime1 || 0,
+            reminders_1: getCount1 || 0,
+            time_per_level2: getTime2 || 0,
+            reminders_2: getCount2 || 0,
+            time_per_level3: getTime3 || 0,
+            reminders_3: getCount3 || 0,
+            })
+        });
+
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+        const data = await res.json();
+        console.log("伺服器回應：", data);
+
+        gamebtn.classList.add('success-animation');
+        gamebtn.innerHTML = '✅ 準備進入遊戲';
+        setTimeout(goToNextGame, 1000);
+
+    } catch (err) {
+        console.error("送出失敗：", err);
+        gamebtn.innerHTML = '重新嘗試';
+        gamebtn.disabled = false;
+    }
+});
+
+    </script>
+</body>
+</html>

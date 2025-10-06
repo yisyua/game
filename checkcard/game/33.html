@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <title>數字對對碰 2x2 練習</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ----------- Body & Background Styles (與規則頁面相同) ----------- */
+        html, body {
+            height: 100%;
+            overflow: hidden; 
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            /* 靜態深灰漸層背景 */
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* ----------- 幾何動畫背景樣式 (與規則頁面相同) ----------- */
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1; 
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        /* 旋轉圓圈 */
+        .circle {
+            position: absolute;
+            border: 2px solid #dfe6e9; 
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 漂浮粒子 */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #b2bec3;
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+            50% { transform: translate(100px, -100px); opacity: 0.8; }
+        }
+
+        /* ------------------- 主卡片容器樣式 ------------------- */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95); /* 奶油白色半透明卡片 */
+            border-radius: 30px;
+            padding: 40px 50px; 
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        
+        /* 遊戲標題樣式 (H2 改為 H1/H2 風格) */
+        #title {
+            font-size: 38px;
+            text-align: center;
+            color: #2d3436;
+            margin-bottom: 30px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        /* 計時器樣式 (若顯示) */
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #636e72;
+            font-weight: 500;
+        }
+
+        /* ----------- 數字網格 (Keyboard) 樣式 ----------- */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* 略減小間距 */
+            background-color: transparent; /* 卡片已提供背景 */
+            padding: 0; 
+            border-radius: 0; 
+            box-shadow: none;
+            user-select: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 12px; /* 略減小間距 */
+        }
+
+        .cell {
+            width: 100px; /* 調整大小以適應 2x2 且不過大 */
+            height: 100px;
+            font-size: 45px;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            /* 模擬卡片按鈕的立體陰影 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            color: #2d3436;
+        }
+        
+        .cell:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 顏色樣式 (保留使用者定義的 color1/color2) */
+        .color1 {
+            background-color: #7B7B7B	; /* 淺紫/藍色 */
+            color: white; 
+        }
+
+        .color2 {
+            background-color: #D8DAD3; /* 淺黃色 */
+            color: #2d3436;
+        }
+
+        /* 選中狀態 - 藍色邊框 */
+        .selected {
+            outline: 5px solid #344055; 
+            outline-offset: -5px;
+            transform: scale(1.05); /* 選中時稍微放大 */
+        }
+
+        /* 提示邊框等級樣式 (與前頁風格保持一致，使用橘紅色調) */
+        .hint-border-level-1 {
+            animation: borderGlow 1s forwards;
+            box-shadow: 0 0 5px 3px rgba(255, 165, 0, 0.5);
+        }
+
+        .hint-border-level-2 {
+            animation: borderGlow 1s forwards;
+            box-shadow: 0 0 8px 5px rgba(255, 140, 0, 0.8);
+        }
+
+        .hint-border-level-3 {
+            animation: borderGlow 1s forwards;
+            box-shadow: 0 0 12px 7px rgba(255, 69, 0, 1);
+        }
+
+        @keyframes borderGlow {
+            from {
+                /* 清除上次的陰影，以便動畫重新開始 */
+                box-shadow: 0 0 0 0 transparent; 
+            }
+            to {
+                /* class 控制結束狀態 */
+            }
+        }
+        
+        /* 響應式調整 */
+        @media (max-width: 500px) {
+            .main-card {
+                padding: 30px 20px;
+            }
+            #title {
+                font-size: 30px;
+            }
+            .keyboard {
+                gap: 8px;
+            }
+            .row {
+                gap: 8px;
+            }
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 35px;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+<body onload="startNewGame()">
+    <div class="geometric-bg" id="geometric"></div>
+    
+    <div class="main-card">
+        <h2 style="display:none;">計時：<span id="timer">0</span> 秒</h2>
+        
+        <h2 id="title" name="title">請選擇2個相同數字</h2>
+
+        <div class="keyboard">
+            <div class="row">
+                <button class="cell color2"></button>
+                <button class="cell color1"></button>
+            </div>
+            <div class="row">
+                <button class="cell color2"></button>
+                <button class="cell color1"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ------------------- 幾何背景動畫 JavaScript -------------------
+        const geometricBg = document.getElementById('geometric');
+
+        // 圓圈資料 (固定位置，添加移動動畫)
+        const circlesData = [
+            { left: '5%', top: '10%', size: 250, duration: 20, delay: 0 },
+            { left: '80%', top: '15%', size: 300, duration: 25, delay: 3 },
+            { left: '20%', top: '70%', size: 220, duration: 22, delay: 2 },
+            { left: '70%', top: '60%', size: 280, duration: 18, delay: 1 },
+            { left: '40%', top: '40%', size: 260, duration: 24, delay: 4 },
+        ];
+
+        // 創建圓圈並添加浮動效果
+        circlesData.forEach((c, index) => {
+            const circle = document.createElement('div');
+            circle.className = 'circle';
+            circle.style.width = c.size + 'px';
+            circle.style.height = c.size + 'px';
+            circle.style.left = c.left;
+            circle.style.top = c.top;
+            circle.style.animationDuration = c.duration + 's';
+            circle.style.animationDelay = c.delay + 's';
+            geometricBg.appendChild(circle);
+
+            // 添加緩慢移動動畫
+            animateCircle(circle, index);
+        });
+
+        function animateCircle(circle, index) {
+            const moveTime = 8000 + (index * 1000);
+
+            function move() {
+                const currentLeft = parseFloat(circle.style.left);
+                const currentTop = parseFloat(circle.style.top);
+
+                const newLeft = currentLeft + (Math.random() - 0.5) * 5;
+                const newTop = currentTop + (Math.random() - 0.5) * 5;
+
+                circle.style.transition = `left ${moveTime}ms ease-in-out, top ${moveTime}ms ease-in-out`;
+                circle.style.left = Math.max(0, Math.min(95, newLeft)) + '%';
+                circle.style.top = Math.max(0, Math.min(95, newTop)) + '%';
+            }
+
+            setInterval(move, moveTime);
+        }
+
+        // 粒子資料 (固定位置)
+        const particlesData = [
+            { left: '10%', top: '20%', duration: 15, delay: 0 },
+            { left: '25%', top: '80%', duration: 18, delay: 1 },
+            { left: '60%', top: '30%', duration: 16, delay: 2 },
+            { left: '85%', top: '70%', duration: 20, delay: 3 },
+            { left: '40%', top: '50%', duration: 17, delay: 4 },
+            { left: '70%', top: '20%', duration: 19, delay: 2 },
+            { left: '15%', top: '60%', duration: 15, delay: 1 },
+            { left: '50%', top: '10%', duration: 16, delay: 0 },
+            { left: '30%', top: '35%', duration: 18, delay: 2 },
+            { left: '80%', top: '50%', duration: 20, delay: 3 },
+            { left: '60%', top: '80%', duration: 19, delay: 1 },
+            { left: '5%', top: '50%', duration: 17, delay: 0 },
+            { left: '90%', top: '10%', duration: 16, delay: 2 },
+            { left: '20%', top: '25%', duration: 18, delay: 1 },
+            { left: '45%', top: '70%', duration: 15, delay: 0 },
+            { left: '75%', top: '40%', duration: 16, delay: 3 },
+            { left: '10%', top: '80%', duration: 17, delay: 2 },
+            { left: '55%', top: '55%', duration: 19, delay: 1 },
+            { left: '35%', top: '15%', duration: 20, delay: 4 },
+            { left: '65%', top: '25%', duration: 18, delay: 2 },
+        ];
+
+        // 創建粒子
+        particlesData.forEach(p => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = p.left;
+            particle.style.top = p.top;
+            particle.style.animationDuration = p.duration + 's';
+            particle.style.animationDelay = p.delay + 's';
+            geometricBg.appendChild(particle);
+        });
+
+        // ------------------- 遊戲邏輯 JavaScript (保持不變) -------------------
+        const maxNum = 20;
+        let repeatedNumber = 0;
+        let timerId = null;
+        let hintIntervalId = null;
+        let seconds = 0;
+        let hintCount = 0;
+        const timerElement = document.getElementById('timer');
+
+        function updateTimer() {
+            seconds++;
+            timerElement.innerText = seconds;
+            localStorage.setItem("reminderTime", seconds);
+        }
+
+        function startNewGame() {
+            clearInterval(timerId);
+            clearInterval(hintIntervalId);
+            localStorage.removeItem("count2");
+            seconds = 0;
+            hintCount = 0;
+            timerElement.innerText = "0";
+            timerId = setInterval(updateTimer, 1000);
+
+            const buttons = Array.from(document.querySelectorAll('.cell'));
+            const total = buttons.length;
+
+            repeatedNumber = Math.floor(Math.random() * maxNum) + 1;
+            let numbers = [repeatedNumber, repeatedNumber];
+            const used = new Set(numbers);
+
+            while (numbers.length < total) {
+                const num = Math.floor(Math.random() * maxNum) + 1;
+                if (!used.has(num)) {
+                    numbers.push(num);
+                    used.add(num);
+                }
+            }
+
+            numbers.sort(() => Math.random() - 0.5);
+
+            buttons.forEach((button, idx) => {
+                button.textContent = numbers[idx];
+                // 確保移除所有提示類別，以防重新開始時保留
+                button.className = 'cell ' + (idx % 2 === 0 ? 'color2' : 'color1'); 
+                button.onclick = () => {
+                    button.classList.toggle('selected');
+                    checkIfMatchAndEndGame();
+                };
+            });
+            
+            // 由於您的 color1 和 color2 邏輯是反的 (color1 灰色，color2 白色)，我修正了按鈕的 class 分配，讓它看起來像棋盤格
+            // 0%2==0 是第一行第一格，我讓它使用 color2 (淺色)，1%2!==0 是第一行第二格，使用 color1 (深色)
+
+            hintIntervalId = setInterval(showHint, 20000);
+        }
+        
+        function checkIfMatchAndEndGame() {
+            const buttons = Array.from(document.querySelectorAll('.cell'));
+            const selected = buttons.filter(btn => btn.classList.contains('selected'));
+            const matched = selected.filter(btn => parseInt(btn.textContent) === repeatedNumber);
+            
+            // 如果成功配對兩個且恰好選了兩個
+            if (selected.length === 2 && matched.length === 2) { 
+                clearInterval(timerId);
+                clearInterval(hintIntervalId);
+                // 成功時將選中按鈕變成綠色，增加視覺反饋
+                selected.forEach(btn => {
+                    btn.classList.remove('selected', 'color1', 'color2', 'hint-border-level-1', 'hint-border-level-2', 'hint-border-level-3');
+                    btn.style.backgroundColor = '#28a745'; // 綠色
+                    btn.style.color = 'white';
+                });
+                document.getElementById("title").textContent = "✅ 配對成功！";
+                setTimeout(() => {
+                    window.location.href = "../checkcardend.html";
+                }, 1000); // 1秒後跳轉
+            } else if (selected.length === 2 && matched.length !== 2) {
+                // 配對錯誤
+                let count2 = parseInt(localStorage.getItem("count2")) || 0;
+                count2++;
+                localStorage.setItem("count2", count2);
+                
+                document.getElementById("title").textContent = "❌ 配對錯誤，請再次點選相同數字";
+                
+                // 錯誤時將選中按鈕變成紅色
+                selected.forEach(btn => {
+                    btn.classList.remove('selected');
+                    btn.style.backgroundColor = '#dc3545'; // 紅色
+                    btn.style.color = 'white';
+                });
+
+                // 錯誤延時後清除選取狀態和顏色
+                setTimeout(() => {
+                    selected.forEach(btn => {
+                        btn.style.backgroundColor = ''; // 恢復 CSS 控制
+                        btn.style.color = '';
+                        // 恢復原有的 color class
+                        if (btn.classList.contains('color1')) {
+                            btn.classList.add('color1');
+                        } else {
+                            btn.classList.add('color2');
+                        }
+                    });
+                    document.getElementById("title").textContent = "請選擇2個相同數字";
+                }, 500);
+            } else if (selected.length > 2) {
+                // 選取超過兩個按鈕 (安全處理，雖然一般應該不會發生)
+                selected.forEach((btn, index) => {
+                    if (index >= 2) btn.classList.remove('selected');
+                });
+            }
+        }
+
+
+        function showHint() {
+            hintCount++;
+            const level = Math.min(hintCount, 3);
+            const buttons = document.querySelectorAll('.cell');
+
+            buttons.forEach(btn => {
+                // 清除所有提示級別，準備應用新的級別
+                btn.classList.remove('hint-border-level-1', 'hint-border-level-2', 'hint-border-level-3');
+                
+                if (parseInt(btn.textContent) === repeatedNumber) {
+                    btn.classList.add(`hint-border-level-${level}`);
+                }
+            });
+            
+            // 確保提示效果只持續一段時間，例如 1 秒後移除
+            setTimeout(() => {
+                buttons.forEach(btn => {
+                    btn.classList.remove('hint-border-level-1', 'hint-border-level-2', 'hint-border-level-3');
+                });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

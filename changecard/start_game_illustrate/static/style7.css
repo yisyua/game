@@ -1,0 +1,142 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  font-size: 28px;
+  color: #333;
+}
+
+h2 {
+  margin-bottom: 30px;
+  font-size: 42px;
+  color: #333;
+  font-weight: bold;
+   font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+/* 表單容器（三欄按鈕） */
+form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  justify-items: center;
+}
+
+/* 卡片按鈕樣式 */
+input[type="button"] {
+  width: 120px;
+  height: 120px;
+  font-size: 40px;
+  border-radius: 15px;
+  border: ridge;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+input[type="button"]:hover {
+  background-color: #ffffff;
+}
+
+input[type="button"]:disabled {
+  background-color: #ccc;
+  cursor: default;
+}
+
+/* 箭頭按鈕通用樣式 */
+.arrow-button,
+.arrow-button1,
+.arrow-button2 {
+  position: fixed;
+  font-size: 36px;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  z-index: 1000;
+}
+
+/* 各個箭頭位置調整 */
+.arrow-button {
+  right: 30px;
+  bottom: 250px;
+}
+
+.arrow-button1 {
+  left: 30px;
+  bottom: 250px;
+}
+
+.arrow-button2 {
+  left: 30px;
+  top: 20px;
+  padding: 8px 18px;
+}
+
+/* 懸停效果 */
+.arrow-button:hover,
+.arrow-button1:hover,
+.arrow-button2:hover {
+  background-color: #ffffff;
+}
+
+/* 響應式設計 */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+
+  header h1 {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+
+  .rule-list {
+    font-size: 22px;
+    line-height: 1.6;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .user-info {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    font-size: 22px;
+    right: 10px;
+    top: 10px;
+  }
+
+  .user-info button {
+    font-size: 20px;
+    padding: 8px 12px;
+  }
+
+  .arrow-button,
+  .arrow-button1 {
+    font-size: 28px;
+    padding: 8px 14px;
+    bottom: 20px;
+  }
+  
+  /* 返回鍵放左上方，大小調整 */
+  .arrow-button2 {
+    top: 10px;
+    left: 10px;
+    font-size: 28px;
+    padding: 8px 14px;
+  }
+}
+

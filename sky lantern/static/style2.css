@@ -1,0 +1,69 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  }
+  
+  h1 {
+    margin-bottom: 30px;
+    font-size: 50px;
+    color: #333;
+  }
+  
+  form {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .button {
+      border: none;
+      color: white;
+      padding: 40px 60px;
+      text-align: center;
+      text-decoration: none;
+      display: block; 
+      font-size: 28px;
+      margin: 4px 2px;
+      margin: 20px 0; /* 上下間距 10px，左右間距 0px */
+      transition-duration: 0.4s;
+      cursor: pointer;
+      border-radius: 30px; /* 圓角 */
+      font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  
+  }
+  
+  .button-container {
+      display: flex;
+      flex-direction: column; /* 垂直排列 */
+      align-items: center; /* 按鈕居中對齊 */
+  }
+  
+  .button1 {
+      background-color: #F2C8B2;
+      color: black;
+      border: 2px solid black;
+  }
+  
+  .button1:hover {
+      background-color: white;
+      color: black;
+  }
+  
+  .button2 {
+      background-color: #F1AEAB;
+      color: black;
+      border: 2px solid black;
+  }
+  
+  .button2:hover {
+      background-color: white;
+      color: black;
+  }
+  
+    

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>遊戲結果</title>
+    <style>
+        /* CSS 重置與基礎樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+        }
+
+        body {
+            /* 深灰漸層背景 */
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 幾何背景動畫樣式 */
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .circle {
+            position: absolute;
+            border: 2px solid #dfe6e9;
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #b2bec3;
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { 
+                transform: translate(0, 0);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translate(100px, -100px);
+                opacity: 0.8;
+            }
+        }
+
+        /* 主容器與標題樣式 */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+            /* 調整初始 max-width，讓它在預設狀態 (只顯示 Summary) 時小一些 */
+            max-width: 450px; 
+            width: 95%;
+            position: relative;
+            z-index: 1;
+            /* **新增：** 過渡效果，使 max-width 變化時有動畫 */
+            transition: max-width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 點擊後放大，允許更大空間來容納並排的詳細結果 */
+        .container.expanded {
+            max-width: 1000px; 
+        }
+
+        h1 {
+            color: #2d3436;
+            font-size: 48px;
+            margin-bottom: 40px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            position: relative;
+            padding-bottom: 20px;
+            text-align: center;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #636e72, transparent);
+            animation: line-expand 2s ease-in-out infinite;
+        }
+
+        @keyframes line-expand {
+            0%, 100% { width: 100px; }
+            50% { width: 200px; }
+        }
+
+        /* 核心佈局：總結與詳細結果並排 (預設只在展開時使用) */
+        .content-wrapper {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            /* 預設為垂直，避免未展開時的空間問題 */
+            flex-direction: column; 
+        }
+        
+        /* 展開時才並排 */
+        .container.expanded .content-wrapper {
+            flex-direction: row; 
+        }
+
+        /* 總結數據區塊 (左側卡片) */
+        .summary {
+            /* 調整尺寸，預設佔滿寬度 */
+            flex: 0 0 auto; 
+            width: 100%;
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(45, 52, 54, 0.3);
+            position: relative;
+            overflow: hidden;
+            min-width: 250px; 
+            /* **新增：** 過渡效果，使寬度變化時有動畫 */
+            transition: flex-basis 0.6s cubic-bezier(0.4, 0, 0.2, 1), width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* 展開時：summary 固定寬度 300px */
+        .container.expanded .summary {
+            flex: 0 0 300px; 
+            width: 300px;
+        }
+
+        .summary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+
+        .summary > div {
+            font-size: 1.6rem;
+            margin-bottom: 18px;
+            position: relative;
+            padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary > div:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary strong {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .summary span {
+            color: #dfe6e9;
+            font-weight: 600;
+            font-size: 1.8rem;
+        }
+
+        /* 詳細結果區塊 (右側卡片) */
+        .result-container {
+            /* **修改：** 預設隱藏，只在 JS 切換 class 時顯示 */
+            display: none; 
+            flex: 1; 
+            animation: fadeIn 0.5s ease 0.3s forwards; /* 延遲動畫，等容器放大完成 */
+            opacity: 0;
+        }
+        
+        /* 展開時：強制顯示 */
+        .container.expanded .result-container {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 內部的三欄式佈局：將三關數據並排放置 */
+        .result-box1 {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px;
+        }
+
+        .level-group {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .level-group:hover {
+            border-color: #636e72;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(99, 110, 114, 0.2);
+        }
+
+        .level-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #636e72;
+            text-align: center;
+        }
+
+        .level-group > div {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #2d3436;
+            padding: 5px 0;
+        }
+
+        .level-group > div:last-child {
+            margin-bottom: 0;
+        }
+
+        .level-group strong {
+            color: #636e72;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 60px;
+            text-align: left;
+        }
+
+        /* 按鈕樣式 (維持不變) */
+        #show-details-btn {
+            padding: 18px 40px;
+            font-size: 1.5rem;
+            border: 2px solid #636e72;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            background: white;
+            color: #636e72;
+            letter-spacing: 2px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: block;
+            margin: 0 auto 30px;
+        }
+
+        #show-details-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #636e72 0%, #4a5458 100%);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        #show-details-btn span {
+            position: relative;
+            z-index: 1;
+            transition: color 0.4s ease;
+        }
+
+        #show-details-btn:hover {
+            border-color: #4a5458;
+            box-shadow: 0 10px 30px rgba(99, 110, 114, 0.4);
+            transform: translateY(-3px);
+        }
+
+        #show-details-btn:hover::before {
+            left: 0;
+        }
+
+        #show-details-btn:hover span {
+            color: white;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .buttons button {
+            flex: 1 1 200px;
+            max-width: 280px;
+            padding: 20px 30px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border: 2px solid;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            background: white;
+        }
+
+        .buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .buttons button span {
+            position: relative;
+            z-index: 1;
+            transition: color 0.4s ease;
+        }
+
+        /* 練習按鈕 */
+        #test {
+            color: #2d3436;
+            border-color: #2d3436;
+        }
+        #test::before {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1f20 100%);
+        }
+        #test:hover {
+            border-color: #1a1f20;
+            box-shadow: 0 10px 30px rgba(45, 52, 54, 0.4);
+            transform: translateY(-3px);
+        }
+        #test:hover::before {
+            left: 0;
+        }
+        #test:hover span {
+            color: white;
+        }
+
+        /* 測試按鈕 */
+        #test2 {
+            color: #636e72;
+            border-color: #636e72;
+        }
+        #test2::before {
+            background: linear-gradient(135deg, #636e72 0%, #4a5458 100%);
+        }
+        #test2:hover {
+            border-color: #4a5458;
+            box-shadow: 0 10px 30px rgba(99, 110, 114, 0.4);
+            transform: translateY(-3px);
+        }
+        #test2:hover::before {
+            left: 0;
+        }
+        #test2:hover span {
+            color: white;
+        }
+
+        /* 下一關按鈕 */
+        #play {
+            color: #b2bec3;
+            border-color: #b2bec3;
+        }
+        #play::before {
+            background: linear-gradient(135deg, #b2bec3 0%, #8f9da6 100%);
+        }
+        #play:hover {
+            border-color: #8f9da6;
+            box-shadow: 0 10px 30px rgba(178, 190, 195, 0.4);
+            transform: translateY(-3px);
+        }
+        #play:hover::before {
+            left: 0;
+        }
+        #play:hover span {
+            color: white;
+        }
+
+        .buttons button:active {
+            transform: translateY(0px);
+        }
+
+        /* 響應式設計 (RWD) */
+
+        /* 平板電腦 (1024px 以下) */
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                /* 變為垂直堆疊 */
+                flex-direction: column; 
+            }
+            
+            /* 即使展開，由於寬度限制，仍然保持垂直堆疊，但結果框要顯示 */
+            .container.expanded .content-wrapper {
+                 flex-direction: column;
+            }
+
+            .container.expanded {
+                 max-width: 700px; /* 在平板上稍微放大 */
+            }
+
+            .summary {
+                /* 佔滿寬度 */
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .container.expanded .summary {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+
+            .result-box1 {
+                /* 三欄 grid 變回一欄垂直堆疊 */
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        /* 手機 (768px 以下) */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                max-width: 95%; /* 手機上不再放大，保持 95% 寬度 */
+            }
+            
+            .container.expanded {
+                 max-width: 95%; 
+            }
+
+            h1 {
+                font-size: 32px;
+                margin-bottom: 30px;
+                letter-spacing: 4px;
+            }
+
+            .content-wrapper {
+                gap: 20px;
+            }
+
+            .summary {
+                padding: 20px;
+            }
+
+            .summary > div {
+                font-size: 1.3rem;
+                margin-bottom: 12px;
+            }
+
+            .summary span {
+                font-size: 1.5rem;
+            }
+
+            #show-details-btn {
+                font-size: 1.2rem;
+                padding: 15px 30px;
+            }
+
+            .result-box1 {
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .level-group {
+                padding: 15px;
+            }
+
+            .level-title {
+                font-size: 1.2rem;
+            }
+
+            .level-group > div {
+                font-size: 1.1rem;
+            }
+
+            .buttons {
+                gap: 15px;
+            }
+
+            .buttons button {
+                font-size: 1.2rem;
+                padding: 15px 25px;
+                flex: 1 1 140px;
+            }
+        }
+    </style>
+</head>
+<body onload="end()">
+    <div class="geometric-bg" id="geometric"></div>
+
+    <div class="container" id="mainContainer">
+        <h1><span id="end"></span></h1>
+
+        <div class="content-wrapper">
+            <div class="summary" id="summaryBox" style="display: none;">
+                <div>總用時: <span id="usedTime"></span> 秒</div>
+                <div>總點擊錯誤: <span id="totalWrong"></span> 次</div>
+                <div>總提醒次數: <span id="totalHints"></span> 次</div>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <div class="result-box1">
+                    <div class="level-group">
+                        <div class="level-title">第一關</div>
+                        <div><strong>用時:</strong> <span id="time1"></span> 秒</div>
+                        <div><strong>錯誤:</strong> <span id="wrong1"></span> 次</div>
+                        <div><strong>提示:</strong> <span id="hint1"></span> 次</div>
+                    </div>
+
+                    <div class="level-group">
+                        <div class="level-title">第二關</div>
+                        <div><strong>用時:</strong> <span id="time2"></span> 秒</div>
+                        <div><strong>錯誤:</strong> <span id="wrong2"></span> 次</div>
+                        <div><strong>提示:</strong> <span id="hint2"></span> 次</div>
+                    </div>
+
+                    <div class="level-group">
+                        <div class="level-title">第三關</div>
+                        <div><strong>用時:</strong> <span id="time3"></span> 秒</div>
+                        <div><strong>錯誤:</strong> <span id="wrong3"></span> 次</div>
+                        <div><strong>提示:</strong> <span id="hint3"></span> 次</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="show-details-btn" style="display: none;" onclick="toggleResult()">
+            <span>查看詳細結果</span>
+        </button>
+
+        <div class="buttons">
+            <button onclick="goToPractice()" id="test" style="display: none;">
+                <span>再練習</span>
+            </button>
+            <button onclick="goToTest()" id="test2" style="display: none;">
+                <span>進入測試</span>
+            </button>
+            <button onclick="location.href='../number/numberstart.html';" id="gamebtn" style="display: none;">
+                <span>下一個遊戲</span>
+            </button>
+        </div>
+    </div>
+
+  <script>
+    // 背景動畫 (保持不變)
+    const geometricBg = document.getElementById('geometric');
+
+    const circlesData = [
+        { left: '5%', top: '10%', size: 250, duration: 20, delay: 0 },
+        { left: '80%', top: '15%', size: 300, duration: 25, delay: 3 },
+        { left: '20%', top: '70%', size: 220, duration: 22, delay: 2 },
+        { left: '70%', top: '60%', size: 280, duration: 18, delay: 1 },
+        { left: '40%', top: '40%', size: 260, duration: 24, delay: 4 },
+    ];
+
+    circlesData.forEach((c, index) => {
+        const circle = document.createElement('div');
+        circle.className = 'circle';
+        circle.style.width = c.size + 'px';
+        circle.style.height = c.size + 'px';
+        circle.style.left = c.left;
+        circle.style.top = c.top;
+        circle.style.animationDuration = c.duration + 's';
+        circle.style.animationDelay = c.delay + 's';
+        geometricBg.appendChild(circle);
+        animateCircle(circle, index);
+    });
+
+    function animateCircle(circle, index) {
+        const moveTime = 8000 + (index * 1000);
+        function move() {
+            const currentLeft = parseFloat(circle.style.left);
+            const currentTop = parseFloat(circle.style.top);
+            const newLeft = currentLeft + (Math.random() - 0.5) * 5;
+            const newTop = currentTop + (Math.random() - 0.5) * 5;
+            circle.style.transition = `left ${moveTime}ms ease-in-out, top ${moveTime}ms ease-in-out`;
+            circle.style.left = Math.max(0, Math.min(95, newLeft)) + '%';
+            circle.style.top = Math.max(0, Math.min(95, newTop)) + '%';
+        }
+        setInterval(move, moveTime);
+    }
+
+    const particlesData = [
+        { left: '10%', top: '20%', duration: 15, delay: 0 },
+        { left: '25%', top: '80%', duration: 18, delay: 1 },
+        { left: '60%', top: '30%', duration: 16, delay: 2 },
+        { left: '85%', top: '70%', duration: 20, delay: 3 },
+        { left: '40%', top: '50%', duration: 17, delay: 4 },
+        { left: '70%', top: '20%', duration: 19, delay: 2 },
+        { left: '15%', top: '60%', duration: 15, delay: 1 },
+        { left: '50%', top: '10%', duration: 16, delay: 0 },
+        { left: '30%', top: '35%', duration: 18, delay: 2 },
+        { left: '80%', top: '50%', duration: 20, delay: 3 },
+    ];
+
+    particlesData.forEach(p => {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = p.left;
+        particle.style.top = p.top;
+        particle.style.animationDuration = p.duration + 's';
+        particle.style.animationDelay = p.delay + 's';
+        geometricBg.appendChild(particle);
+    });
+
+    // ripple 效果
+    document.querySelectorAll('.buttons button, #show-details-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.width = '10px';
+            ripple.style.height = '10px';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255,255,255,0.6)';
+            ripple.style.transform = 'translate(-50%,-50%)';
+            ripple.style.pointerEvents = 'none';
+            this.appendChild(ripple);
+            ripple.animate([
+                {width:'10px', height:'10px', opacity:1},
+                {width:'400px', height:'400px', opacity:0}
+            ], {duration:600, easing:'ease-out'}).onfinish = () => ripple.remove();
+        });
+    });
+
+    // 遊戲資料
+    let level = localStorage.getItem("test") || "練習";
+
+    const time1 = Number(localStorage.getItem("reminderTime") || 0);
+    const time2 = Number(localStorage.getItem("reminderTime2") || 0);
+    const time3 = Number(localStorage.getItem("reminderTime3") || 0);
+
+    const wrong1 = Number(localStorage.getItem("count2") || 0);
+    const wrong2 = Number(localStorage.getItem("count3") || 0);
+    const wrong3 = Number(localStorage.getItem("count4") || 0);
+
+    const hint1 = Number(localStorage.getItem("hintCount1") || 0);
+    const hint2 = Number(localStorage.getItem("hintCount2") || 0);
+    const hint3 = Number(localStorage.getItem("hintCount3") || 0);
+
+    // 定義 lt, lh, lw 陣列
+    const lt = [time1, time2, time3, 0];
+    const lh = [hint1, hint2, hint3, 0];
+    const lw = [wrong1, wrong2, wrong3, 0];
+
+    function end() {
+        const mainContainer = document.getElementById("mainContainer");
+        const summaryBox = document.getElementById("summaryBox");
+        const resultContainer = document.getElementById("resultContainer");
+        const showBtn = document.getElementById("show-details-btn");
+        const gamebtn = document.getElementById("gamebtn");
+        const testBtn = document.getElementById("test");
+        const test2Btn = document.getElementById("test2");
+
+        if (level === "測驗") {
+            document.getElementById("end").textContent = "數字對對碰挑戰 - 結算";
+            summaryBox.style.display = "block";
+            document.getElementById("usedTime").textContent = time1 + time2 + time3;
+            document.getElementById("totalWrong").textContent = wrong1 + wrong2 + wrong3;
+            document.getElementById("totalHints").textContent = hint1 + hint2 + hint3;
+
+            document.getElementById("time1").textContent = time1;
+            document.getElementById("time2").textContent = time2;
+            document.getElementById("time3").textContent = time3;
+
+            document.getElementById("wrong1").textContent = wrong1;
+            document.getElementById("wrong2").textContent = wrong2;
+            document.getElementById("wrong3").textContent = wrong3;
+
+            document.getElementById("hint1").textContent = hint1;
+            document.getElementById("hint2").textContent = hint2;
+            document.getElementById("hint3").textContent = hint3;
+
+            showBtn.style.display = "block";
+            gamebtn.style.display = "block";
+            testBtn.style.display = "none";
+            test2Btn.style.display = "none";
+
+            // 初始狀態：詳細結果隱藏
+            resultContainer.style.opacity = 0;
+            resultContainer.style.display = "none";
+            mainContainer.classList.remove('expanded');
+
+        } else {
+            document.getElementById("end").textContent = "練習結束";
+            summaryBox.style.display = "none";
+            resultContainer.style.display = "none";
+            showBtn.style.display = "none";
+            testBtn.style.display = "block";
+            test2Btn.style.display = "block";
+            gamebtn.style.display = "none";
+            mainContainer.classList.remove('expanded');
+        }
+    }
+
+    function toggleResult() {
+        const mainContainer = document.getElementById("mainContainer");
+        const resultContainer = document.getElementById("resultContainer");
+        const btn = document.getElementById("show-details-btn");
+        const btnSpan = btn.querySelector('span');
+
+        const isExpanded = mainContainer.classList.contains('expanded');
+
+        if (isExpanded) {
+            resultContainer.style.opacity = 0;
+            setTimeout(() => {
+                resultContainer.style.display = "none";
+            }, 400);
+            mainContainer.classList.remove('expanded');
+            btnSpan.textContent = "查看詳細結果";
+        } else {
+            resultContainer.style.display = "block";
+            setTimeout(() => resultContainer.style.opacity = 1, 50); // fadeIn
+            mainContainer.classList.add('expanded');
+            btnSpan.textContent = "隱藏詳細結果";
+        }
+    }
+
+    function goToTest() {
+        localStorage.setItem("test", "測驗");
+        clearGame();
+        location.href = 'game/34.html';
+    }
+
+    function goToPractice() {
+        localStorage.setItem("test", "練習");
+        clearGame();
+        location.href = 'game/33.html';
+    }
+
+    function clearGame() {
+        const keys = [
+            "reminderTime", "reminderTime2", "reminderTime3",
+            "count2", "count3", "count4",
+            "hintCount1", "hintCount2", "hintCount3"
+        ];
+        keys.forEach(k => localStorage.removeItem(k));
+    }
+
+    // 送資料到伺服器
+    const gamebtn = document.getElementById('gamebtn');
+    gamebtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        gamebtn.innerHTML = '載入中...';
+        gamebtn.disabled = true;
+        const user_name = localStorage.getItem('nickname') || 0;
+        const age = localStorage.getItem('age') || 0;
+
+        try {
+            const res = await fetch("/number_game", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: user_name,
+                    age: age,
+                    Time_per_level1: lt[0],
+                    Time_per_level2: lt[1],
+                    Time_per_level3: lt[2],
+                    Time_per_level4: lt[3],
+                    total_time: lt.reduce((a,b)=>a+b,0),
+                    reminders_per_level1: lh[0],
+                    reminders_per_level2: lh[1],
+                    reminders_per_level3: lh[2],
+                    reminders_per_level4: lh[3],
+                    total_reminders: lh.reduce((a,b)=>a+b,0),
+                    missed_per_level1: lw[0],
+                    missed_per_level2: lw[1],
+                    missed_per_level3: lw[2],
+                    missed_per_level4: lw[3],
+                    Total_number_of_missed: lw.reduce((a,b)=>a+b,0)
+                })
+            });
+
+            if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+            const data = await res.json();
+            console.log("伺服器回應：", data);
+
+            gamebtn.classList.add('success-animation');
+            gamebtn.innerHTML = '✅ 準備進入遊戲';
+            setTimeout(() => location.href='../number/numberstart.html', 1000);
+
+        } catch (err) {
+            console.error("送出失敗：", err);
+            gamebtn.innerHTML = '下一個遊戲';
+            gamebtn.disabled = false;
+        }
+    });
+
+</script>
+
+</body>
+</html>

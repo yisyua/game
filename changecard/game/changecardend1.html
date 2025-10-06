@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲結果 - 樂齡互動遊戲</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(129, 199, 132, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(165, 214, 167, 0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+            background-size: 800px 800px, 600px 600px, 400px 400px, 100% 100%;
+            background-attachment: fixed;
+            animation: backgroundFloat 15s ease-in-out infinite;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        @keyframes backgroundFloat {
+            0%, 100% { 
+                background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%; 
+            }
+            33% { 
+                background-position: 30% 30%, 70% 70%, 80% 20%, 0% 0%; 
+            }
+            66% { 
+                background-position: 70% 10%, 30% 90%, 20% 80%, 0% 0%; 
+            }
+        }
+        
+        /* 浮動裝飾粒子 */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, rgba(76, 175, 80, 0.6), rgba(129, 199, 132, 0.3));
+            border-radius: 50%;
+            animation: float 12s ease-in-out infinite;
+        }
+        
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 12s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 14s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 10s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 6s; animation-duration: 13s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 8s; animation-duration: 15s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 10s; animation-duration: 11s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 12s; animation-duration: 16s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 14s; animation-duration: 12s; }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(100vh) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+                transform: translateY(90vh) rotate(36deg) scale(1);
+            }
+            90% {
+                opacity: 0.7;
+                transform: translateY(-10vh) rotate(324deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20vh) rotate(360deg) scale(0);
+            }
+        }
+        
+        /* 用戶資訊區 */
+        .user-info {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 1.4rem;
+            color: #2e7d32;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 25px;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.2);
+            font-weight: 600;
+        }
+        
+        .user-info button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            font-family: inherit;
+        }
+        
+        .user-info button:hover {
+            background: linear-gradient(135deg, #388e3c, #4caf50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* 主容器 */
+        .container {
+            background: 
+                linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 255, 248, 0.9)),
+                radial-gradient(circle at 30% 30%, rgba(129, 199, 132, 0.1), transparent 70%);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 
+                0 25px 60px rgba(76, 175, 80, 0.2),
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.8);
+            padding: 50px 40px;
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* 標題 */
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1b5e20, #2e7d32, #388e3c, #4caf50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 40px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.02); filter: brightness(1.1); }
+        }
+        
+        /* 結果框 */
+        .result-box, .result-box1 {
+            background: 
+                linear-gradient(145deg, #ffffff, #f0f9ff),
+                radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.05), transparent 50%);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+            box-shadow: 
+                0 8px 25px rgba(76, 175, 80, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .result-box1 {
+            background: 
+                linear-gradient(145deg, #e8f5e9, #f1f8e9),
+                radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.1), transparent 50%);
+            border: 2px solid rgba(76, 175, 80, 0.2);
+        }
+        
+        .result-box:hover, .result-box1:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 35px rgba(76, 175, 80, 0.15),
+                inset 0 2px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        .result-box div, .result-box1 div {
+            font-size: 1.6rem;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-box div:last-child, .result-box1 div:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-box span, .result-box1 span {
+            color: #1b5e20;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+        
+        /* 按鈕區域 */
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .exit-btn {
+            padding: 18px 35px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+            min-width: 160px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .exit-btn:hover::before {
+            left: 100%;
+        }
+        
+        #test {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+        }
+        
+        #test:hover {
+            background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(255, 152, 0, 0.4);
+        }
+        
+        #test2 {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
+        }
+        
+        #test2:hover {
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(33, 150, 243, 0.4);
+        }
+        
+        #play {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+        
+        #play:hover {
+            background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* 響應式設計 - 平板 */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 40px 30px;
+                max-width: 600px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .result-box div, .result-box1 div {
+                font-size: 1.4rem;
+            }
+            
+            .result-box span, .result-box1 span {
+                font-size: 1.6rem;
+            }
+            
+            .exit-btn {
+                font-size: 1.3rem;
+                padding: 16px 30px;
+            }
+        }
+        
+        /* 響應式設計 - 手機 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .user-info {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .result-box, .result-box1 {
+                padding: 20px;
+            }
+            
+            .result-box div, .result-box1 div {
+                font-size: 1.3rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .result-box span, .result-box1 span {
+                font-size: 1.5rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .exit-btn {
+                width: 100%;
+                font-size: 1.2rem;
+                padding: 16px 25px;
+            }
+        }
+        
+        /* 響應式設計 - 小手機 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .result-box div, .result-box1 div {
+                font-size: 1.2rem;
+            }
+            
+            .result-box span, .result-box1 span {
+                font-size: 1.4rem;
+            }
+            
+            .exit-btn {
+                font-size: 1.1rem;
+                padding: 14px 20px;
+            }
+            
+            .user-info {
+                font-size: 1.1rem;
+                padding: 10px 15px;
+            }
+            
+            .user-info button {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+        }
+        
+        /* 成功動畫 */
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounceIn 1s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <div class="container">
+        <div class="success-icon">🎉</div>
+        <h1>練習結束</h1>
+        
+        <div class="buttons">
+            <button class="exit-btn" onclick="location.href='3changecard.html';clearData()" id="test">
+                🔄 再練習
+            </button>
+            <button class="exit-btn" onclick="location.href='4changecard.html';clearData()" id="test2">
+                📝 進入測試
+            </button>
+            <button class="exit-btn" onclick="location.href='../sky lantern/Home screen.html';" id="play" style="display: none;">
+                🎮 下一關
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 讀取用戶資訊
+        const username = localStorage.getItem('nickname'); // 在實際應用中可從記憶體獲取
+        // 讀取遊戲時間與提醒次數
+        const timeLeft1 = localStorage.getItem('reminderTime');
+        const count1 = localStorage.getItem('reminderCount');
+
+        // 將 level 改為可變動的變數
+        let level = "練習";
+
+        // 計算平均時間
+        function calcAverage(t1, t2, t3) {
+            return ((parseInt(t1) + parseInt(t2) + parseInt(t3)) / 3).toFixed(2);
+        }
+
+        // 切換到測驗模式
+        document.getElementById("test2").addEventListener("click", function () {
+            level = "測驗";
+            end();
+        });
+
+        // 顯示遊戲結果與按鈕
+        function end() {
+            if (level === "測驗") {
+                document.getElementById("username").textContent = `您好，${username}`;
+                if (timeLeft1 && timeLeft2 && timeLeft3) {
+                    document.getElementById("usedTime").textContent = calcAverage(timeLeft1, timeLeft2, timeLeft3) || '0';
+                }
+
+                // 正確加總提醒次數
+                document.getElementById("count3").textContent =
+                    Number(count1) + Number(count2) + Number(count3) || '0';
+
+                // 顯示「下一關」
+                document.getElementById("play").style.display = "block";
+
+                // 隱藏練習按鈕
+                document.getElementById("test").style.display = "none";
+                document.getElementById("test2").style.display = "none";
+
+                saveGameResult();
+            } else if (level === "練習") {
+                
+                if (timeLeft1) {
+                    document.getElementById("usedTime").textContent = timeLeft1 || '0';
+                }
+
+                document.getElementById("count3").textContent = Number(count1)  || '0';
+
+                // 顯示「再練習」與「進入測驗」
+                document.getElementById("test").style.display = "block";
+                document.getElementById("test2").style.display = "block";
+
+                // 隱藏「下一關」
+                document.getElementById("play").style.display = "none";
+            }
+        }
+
+        // 載入時執行一次
+        window.onload = end;
+
+        // 儲存遊戲結果（模擬函數）
+        function saveGameResult() {
+            const newRecord = {
+                遊戲玩家名稱: username,
+                嗜好: hobby || habit,
+                遊戲名稱: "翻牌",
+                第一關遊戲4對卡牌與3對卡牌總秒數: timeLeft1 || null,
+                第一關遊戲4對卡牌與3對卡牌提醒次數: count1,
+                第二關遊戲6對卡牌總秒數: timeLeft2 || null,
+                第二關遊戲6對卡牌提醒次數: count2,
+                第三關遊戲8對卡牌總秒數: timeLeft3 || null,
+                第三關遊戲8對卡牌提醒次數: count3,
+                總平均時間: (timeLeft1 && timeLeft2 && timeLeft3) ? calcAverage(timeLeft1, timeLeft2, timeLeft3) : (timeLeft1 || null),
+                時間: new Date().toLocaleString()
+            };
+
+            console.log('遊戲結果已儲存：', newRecord);
+        }
+
+        // 清除遊戲相關暫存
+        function clearGame() {
+            console.log('清除遊戲暫存');
+        }
+
+        // 清除所有資料
+        function clearData() {
+            console.log('清除所有資料');
+        }
+
+        function logout() {
+            clearData();
+            alert('登出成功！即將返回首頁');
+            // location.href = "../index.html";
+        }
+
+        // 匯出遊戲資料
+        function exportGameData() {
+            alert('匯出遊戲資料功能（需要實際實作 Excel 匯出功能）');
+        }
+    </script>
+</body>
+</html>

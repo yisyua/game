@@ -1,0 +1,168 @@
+/* 全局字體和背景 */
+body {
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  font-size: 50px; /* 放大基礎字體 */
+  background-color: #f9f9f9;
+  color: #222;
+  margin: 0;
+  padding: 20px;
+}
+
+/* 頁面標題 */
+h1 {
+  font-size: 50px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* 右上角使用者資訊 */
+.user-info {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-size: 28px;
+  color: #333;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  z-index: 1000;
+}
+
+.user-info button {
+  padding: 12px 20px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 22px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.user-info button:hover {
+  background-color: #357ABD;
+}
+
+/* 卡片網格容器，固定3欄 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 90px);
+  gap: 15px 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.card {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #aaa;
+  border-radius: 15px;
+  background-color: white;
+
+  /* 中央對齊圖片 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* 美觀用的 */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 8px;
+}
+
+.card img{
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* 按鈕群容器 */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* 按鈕基礎樣式 */
+.button {
+  width:300px;
+  height: 100px;
+  padding: 18px 36px;
+  font-size: 30px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 700;
+  color: white;
+  background-color: #565656;
+  transition: background-color 0.3s ease;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.button:hover {
+  background-color: #565656;
+}
+
+/* 第二種按鈕樣式 */
+.button2 {
+  background-color: #565656;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.button2:hover {
+  background-color: #565656;
+}
+
+.button3 {
+  background-color: #565656;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.button2:hover {
+  background-color: #565656;
+}
+
+/* 左上角返回 X 按鈕 */
+.arrow-wrapper {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+}
+
+.arrow-button {
+  font-size: 36px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.arrow-button:hover {
+  background-color: #c0392b;
+}
+
+/* 響應式調整：平板橫屏依然保持3欄，卡片稍微放大，但仍較原版縮小 */
+@media screen and (min-width: 768px) {
+  body {
+    padding: 40px;
+  }
+
+  .preview-grid {
+    max-width: 560px;
+    gap: 25px;
+    grid-template-columns: repeat(3, 1fr); /* 固定3欄 */
+  }
+
+  .card {
+    height: 77px;         /* 原110px縮小成約70% */
+    font-size: 45px;      /* 原64px縮小成約70% */
+  }
+}

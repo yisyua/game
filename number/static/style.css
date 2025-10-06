@@ -1,0 +1,89 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+h2 {
+  margin-bottom: 30px;
+  font-size: 36px;
+  color: #333;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+form {
+  display: flex;
+  gap: 20px;
+}
+
+.button {
+  border: none;
+  padding: 40px 60px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block; /* ✅ 水平排列 */
+  font-size: 28px;
+  margin: 0; /* 由 .buttons 控制間距 */
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 30px;
+  background-color: #565656;
+  color: white;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+
+.button-container {
+  display: flex;
+  gap: 100px; /* 按鈕之間的水平間距 */
+  justify-content: center; /* 水平置中 */
+  margin-top: 20px;
+  flex-wrap: wrap; /* 若空間不足可換行 */
+}
+
+.button1 {
+    width:300px;
+    height:150px;
+    background-color: #B2D0F2;
+    color: black;
+    font-size: 40px;
+    border: 2px solid black;
+    font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+
+.button2 {
+    width:300px;
+    height:150px;
+    background-color: #EFD2FB;
+    color: black;
+    font-size: 40px;
+    border: 2px solid black;
+    font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+
+.back-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 12px 25px;
+  font-size: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #ffffff;
+}
+
+  

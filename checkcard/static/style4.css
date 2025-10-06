@@ -1,0 +1,151 @@
+ body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #dce6f1; /* 柔和淺藍 */
+      font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      padding-top: 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .timer {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #2c3e50; /* 深藍色 */
+    }
+
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: #f7f3e9; /* 柔和奶油白 */
+      padding: 20px 40px;
+      border-radius: 25px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      user-select: none;
+      min-width: 720px; /* 增加寬度，130*5 + 間距大約720px */
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .cell {
+      width: 130px;
+      height: 130px;
+      font-size: 60px;
+      font-weight: 600;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+      transition: all 0.2s ease-in-out;
+      color: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      user-drag: none;
+    }
+
+    .cell:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    
+    /* 兩種灰白色按鈕 */
+    .color1 {
+      background-color: #8E8E8E; /* 淺灰色 */
+    }
+
+    .color2 {
+      background-color: #f5f5f5; /* 淺白灰色 */
+    }
+
+    .selected {
+      outline: 5px solid #7f8c8d;
+      outline-offset: -5px;
+    }
+  .arrow-button {
+    position: absolute;
+    right: 150px; /* 調整右箭頭的位置 */
+    top: 55%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #6A5ACD, #836FFF);
+    color: white;
+    border-radius: 50%;
+    font-size: 40px;
+    text-align: center;
+    line-height: 80px;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(106, 90, 205, 0.8);
+    transition: all 0.3s ease;
+  }
+  
+  .arrow-button:hover {
+    transform: translateY(-50%) scale(1.1);
+    background: linear-gradient(135deg, #7B68EE, #9370DB);
+    box-shadow: 0 0 30px rgba(123, 104, 238, 0.8);
+  }
+  
+  /* 第一個箭頭（右箭頭） */
+  .arrow-button1 {
+    position: absolute;
+    right: 1300px; /* 讓左箭頭向左移動，避免與右箭頭重疊 */
+    top: 55%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #6A5ACD, #836FFF);
+    color: white;
+    border-radius: 50%;
+    font-size: 40px;
+    text-align: center;
+    line-height: 80px;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(106, 90, 205, 0.8);
+    transition: all 0.3s ease;
+  }
+  
+  /* 第一個箭頭的懸停效果 */
+  .arrow-button1:hover {
+    transform: translateY(-50%) scale(1.1);
+    background: linear-gradient(135deg, #7B68EE, #9370DB);
+    box-shadow: 0 0 30px rgba(123, 104, 238, 0.8);
+  }
+  h2 {
+  margin-bottom: 10px;
+  font-size: 40px;
+  color: #333;
+  text-align: center;
+  }
+  .highlight {
+  border: 10px solid red;
+}
+/* 返回鍵 */
+.back-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background-color: #6A5ACD;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #7B68EE;
+}

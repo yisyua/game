@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #F0E5F4;
+    font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    font-size: 24px; /* 整體字體變大 */
+}
+
+h2 {
+    margin-bottom: 40px;
+    font-size: 48px; /* 更大標題 */
+    color: #222;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    gap: 40px; /* 按鈕間距拉大 */
+    flex-direction: row; /* 改為橫向排列 */
+    flex-wrap: wrap; /* 小平板也能自動換行 */
+    justify-content: center;
+}
+
+.button {
+    border: none;
+    color: white;
+    padding: 60px 80px; /* 更大按鈕 */
+    text-align: center;
+    text-decoration: none;
+    font-size: 32px; /* 按鈕文字更大 */
+    margin: 20px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    border-radius: 40px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* 按鈕有陰影 */
+    min-width: 280px; /* 最小寬度防止太窄 */
+}
+
+.button1 {
+    background-color: #F2C8B2;
+    color: black;
+    border: 3px solid black;
+}
+
+.button1:hover {
+    background-color: white;
+    color: black;
+}
+
+.button2 {
+    background-color: #F1AEAB;
+    color: black;
+    border: 3px solid black;
+}
+
+.button2:hover {
+    background-color: white;
+    color: black;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: row; /* 改為橫向按鈕排列 */
+    justify-content: center;
+    flex-wrap: wrap; /* 防止太擠 */
+}

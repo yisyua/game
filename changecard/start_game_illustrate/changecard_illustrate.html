@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>遊戲規則說明</title>
+  <link rel="stylesheet" href="static/style8.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(129, 199, 132, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(165, 214, 167, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+      background-size: 800px 800px, 600px 600px, 400px 400px, 100% 100%;
+      background-attachment: fixed;
+      animation: backgroundFloat 15s ease-in-out infinite;
+      font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+    
+    @keyframes backgroundFloat {
+      0%, 100% { 
+        background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%; 
+      }
+      33% { 
+        background-position: 30% 30%, 70% 70%, 80% 20%, 0% 0%; 
+      }
+      66% { 
+        background-position: 70% 10%, 30% 90%, 20% 80%, 0% 0%; 
+      }
+    }
+    
+    /* 浮動裝飾粒子 */
+    .floating-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, rgba(76, 175, 80, 0.6), rgba(129, 199, 132, 0.3));
+      border-radius: 50%;
+      animation: float 12s ease-in-out infinite;
+    }
+    
+    .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 12s; }
+    .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 14s; }
+    .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 10s; }
+    .particle:nth-child(4) { left: 40%; animation-delay: 6s; animation-duration: 13s; }
+    .particle:nth-child(5) { left: 50%; animation-delay: 8s; animation-duration: 15s; }
+    .particle:nth-child(6) { left: 60%; animation-delay: 10s; animation-duration: 11s; }
+    .particle:nth-child(7) { left: 70%; animation-delay: 12s; animation-duration: 16s; }
+    .particle:nth-child(8) { left: 80%; animation-delay: 14s; animation-duration: 12s; }
+    
+    @keyframes float {
+      0%, 100% { 
+        transform: translateY(100vh) rotate(0deg) scale(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+        transform: translateY(90vh) rotate(36deg) scale(1);
+      }
+      90% {
+        opacity: 0.7;
+        transform: translateY(-10vh) rotate(324deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-20vh) rotate(360deg) scale(0);
+      }
+    }
+    
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      width: 100%;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    header h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      color: #2e7d32;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+    
+    .login-box {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 35px;
+      padding: 60px 80px;
+      box-shadow: 
+        0 20px 60px rgba(76, 175, 80, 0.2),
+        0 10px 30px rgba(0, 0, 0, 0.1),
+        inset 0 2px 0 rgba(255, 255, 255, 0.8);
+      margin-bottom: 30px;
+      max-width: 1100px;
+      width: 95%;
+    }
+    
+    .rule-container {
+      width: 100%;
+    }
+    
+    .rule-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: rule-counter;
+    }
+    
+    .rule-list li {
+      display: flex;
+      align-items: center;
+      padding: 30px 35px;
+      margin-bottom: 25px;
+      background: linear-gradient(135deg, #f1f8e9 0%, #ffffff 100%);
+      border-radius: 20px;
+      border-left: 6px solid #4caf50;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .rule-list li:hover {
+      transform: translateX(10px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.2);
+      border-left-width: 10px;
+    }
+    
+    .rule-list li:last-child {
+      margin-bottom: 0;
+    }
+    
+    .rule-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-radius: 50%;
+      margin-right: 25px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+    }
+    
+    .rule-text {
+      font-size: 1.6rem;
+      color: #2e7d32;
+      line-height: 1.8;
+      font-weight: 500;
+    }
+    
+    /* 響應式設計 - 平板 */
+    @media (max-width: 1024px) {
+      .login-box {
+        padding: 40px 45px;
+      }
+      
+      header h1 {
+        font-size: 3rem;
+      }
+      
+      .rule-text {
+        font-size: 1.2rem;
+      }
+    }
+    
+    /* 響應式設計 - 手機 */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+      
+      .login-box {
+        padding: 30px 25px;
+      }
+      
+      header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .rule-list li {
+        padding: 20px;
+        margin-bottom: 15px;
+      }
+      
+      .rule-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+        margin-right: 15px;
+      }
+      
+      .rule-text {
+        font-size: 1.1rem;
+      }
+    }
+    
+    /* 響應式設計 - 小手機 */
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 25px 20px;
+      }
+      
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .rule-list li {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+        border-left: none;
+        border-top: 5px solid #4caf50;
+      }
+      
+      .rule-list li:hover {
+        transform: translateY(-5px);
+        border-top-width: 8px;
+      }
+      
+      .rule-number {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      
+      .rule-text {
+        font-size: 1rem;
+      }
+    }
+    
+    .user-info {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: #333;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-family: "華康兒風體W3";
+    }
+
+    .user-info button {
+      padding: 6px 12px;
+      background-color: #CECEFF;
+      border: none;
+      border-radius: 8px;
+      size: 40px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      font-family: "華康兒風體W3";
+    }
+
+    .user-info button:hover {
+      background-color: #b2b2ff;
+    }
+
+    .arrow-button1, .arrow-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10;
+  user-select: none;
+}
+
+.arrow-button1 { left: 40px; }
+.arrow-button { right: 40px; }
+
+.arrow-button1:hover, .arrow-button:hover {
+  background: linear-gradient(135deg, #66bb6a, #81c784);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.arrow-button1:active, .arrow-button:active {
+  transform: translateY(0px) scale(0.95);
+  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+.arrow-button2 {
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #f44336, #e53935);
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10;
+  user-select: none;
+}
+
+.arrow-button2:hover {
+  background: linear-gradient(135deg, #e53935, #c62828);
+  transform: translateY(-2px) rotate(90deg);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+}
+
+.arrow-button2:active {
+  transform: translateY(0px) rotate(90deg) scale(0.95);
+  box-shadow: 0 2px 10px rgba(244, 67, 54, 0.4);
+}
+
+  </style>
+</head>
+<body>
+  <div class="floating-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+  
+  <div class="container">
+    <header>
+      <h1>記憶翻牌</h1>
+    </header>
+    <div class="login-box">
+      <section class="rule-container">
+        <ol class="rule-list">
+          <li>
+            <span class="rule-number">1</span>
+            <span class="rule-text">螢幕上會出現多張牌，每張牌背面都有一樣的圖案</span>
+          </li>
+          <li>
+            <span class="rule-number">2</span>
+            <span class="rule-text">每次可以翻開兩張牌</span>
+          </li>
+          <li>
+            <span class="rule-number">3</span>
+            <span class="rule-text">如果兩張牌的圖案一樣，就會配對成功並留下來</span>
+          </li>
+          <li>
+            <span class="rule-number">4</span>
+            <span class="rule-text">如果圖案不一樣，兩張牌會自動蓋回去</span>
+          </li>
+          <li>
+            <span class="rule-number">5</span>
+            <span class="rule-text">試著記住每張牌的位置，繼續配對其他卡牌</span>
+          </li>
+        </ol>
+      </section>
+    </div>
+    <div class="arrow-button1" onclick="location.href='../changecardhead.html'">
+  <span>←</span>
+</div>
+<div class="arrow-button" onclick="location.href='changecardpi1.html'">
+  <span>→</span>
+</div>
+<span class="arrow-button2" onclick="location.href='../changecardhead.html'">X</span>
+
+
+  <script>
+    const username = localStorage.getItem("nickname") || "訪客";
+    const usernameElement = document.getElementById("username");
+    if (usernameElement) {
+      usernameElement.textContent = `您好，${username}`;
+    }
+
+    function logout() {
+      localStorage.clear();
+      location.href = "../index.html";
+    }
+    
+    function exportGameData() {
+      const records = JSON.parse(localStorage.getItem("gameResults") || "[]");
+      if (records.length === 0) {
+        alert("沒有遊戲紀錄可匯出！");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(records);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "遊戲紀錄");
+      XLSX.writeFile(wb, "game_results.xlsx");
+
+      localStorage.removeItem("gameResults");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>綜合遊戲結果</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <style>
+    /* ===== 基本設定 ===== */
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+  padding: 30px;
+  color: #333;
+  margin: 0;
+}
+
+/* ===== 標題 ===== */
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* ===== 使用者資訊區塊 ===== */
+.user-info {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-info button {
+  background-color: #e74c3c;
+  color: white;
+  border: 2px solid #e74c3c;
+  padding: 10px 20px; /* 放大按鈕 */
+  border-radius: 8px;
+  font-size: 1rem; /* 字體加大 */
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.user-info button:hover {
+  background-color: white;
+  color: #e74c3c;
+  transform: scale(1.08);
+}
+
+
+/* ===== 報告主體容器 ===== */
+#reportContainer {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 40px auto;
+}
+
+/* ===== 表頭 ===== */
+#reportHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* ===== 遊戲區塊標題 ===== */
+.game-section {
+  margin-top: 40px;
+}
+
+.game-section h2 {
+  color: #2980b9;
+  border-bottom: 2px solid #2980b9;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+}
+
+/* ===== 表格樣式 ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+th {
+  background-color: #f1f5f9;
+  color: #333;
+}
+
+td {
+  background-color: #ffffff;
+}
+
+tr:nth-child(even) td {
+  background-color: #f9f9f9;
+}
+
+tfoot th {
+  background-color: #e8f0fe;
+  font-weight: bold;
+}
+
+/* ===== 按鈕區塊 ===== */
+.buttons {
+  text-align: center;
+  margin-top: 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.buttons button {
+  padding: 14px 28px;
+  margin: 0 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, background 0.3s ease, border 0.3s;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+/* 再練習按鈕（綠色系） */
+#btnPractice {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  border-color: #2ecc71;
+  animation-delay: 0.2s;
+}
+#btnPractice:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  border-color: #10b981;
+  transform: scale(1.05);
+}
+
+/* 進入測試按鈕（橘色系） */
+#btnTest {
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  border-color: #f59e0b;
+  animation-delay: 0.4s;
+}
+#btnTest:hover {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border-color: #ef4444;
+  transform: scale(1.05);
+}
+
+/* ===== 動畫效果 ===== */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+  </style>
+</head>
+<body onload="renderResult()">
+  <div class="user-info" id="user-info" style="display: none;">
+    <span id="usernameDisplay" style="display: none;">玩家</span>
+    <button id="logout" onclick="logout()" style="display: none;">登出</button>
+  </div>
+
+  <h1><span id="end"></h1>
+  <div id="reportContainer">
+    <div id="reportHeader">
+      <h3>使用者：<span id="reportUsername">玩家</span></h3>
+      <h3>日期：<span id="reportDate">—</span></h3>
+    </div>
+
+    <!-- 各遊戲表格 -->
+    <div class="game-section" id="flipSection">
+      <h2>翻牌遊戲</h2>
+      <table>
+        <thead>
+          <tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th></tr>
+        </thead>
+        <tbody id="flipBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th><th id="flip_totalTime">0</th><th id="flip_totalHint">0</th></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="game-section" id="lanternSection">
+      <h2>點擊天燈</h2>
+      <table>
+        <tbody>
+          <tr><th>命中率</th><td id="lantern_accuracy">0%</td></tr>
+          <tr><th>失敗率</th><td id="lantern_failure">0%</td></tr>
+          <tr><th>排名</th><td id="lantern_rank">—</td></tr>
+          <tr><th>分數</th><td id="lantern_score">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="game-section" id="matchSection">
+      <h2>數字對對碰</h2>
+      <table>
+        <thead><tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th><th>錯誤次數</th></tr></thead>
+        <tbody id="matchBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th>
+            <th id="match_totalTime">0</th>
+            <th id="match_totalHint">0</th>
+            <th id="match_totalWrong">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="game-section" id="lineSection">
+      <h2>數字連線</h2>
+      <table>
+        <thead><tr><th>關卡</th><th>用時（秒）</th><th>提示次數</th><th>錯誤次數</th></tr></thead>
+        <tbody id="lineBody"></tbody>
+        <tfoot>
+          <tr><th>總計</th>
+            <th id="line_totalTime">0</th>
+            <th id="line_totalHint">0</th>
+            <th id="line_totalWrong">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button onclick="goToPractice()" id="btnPractice" style="display:none;">再練習</button>
+    <button onclick="goToTest()" id="btnTest" style="display:none;">進入測試</button>
+  </div>
+
+  <script>
+  const username = localStorage.getItem('nickname') || '玩家';
+  document.getElementById('usernameDisplay').textContent = `您好，${username}`;
+  document.getElementById('reportUsername').textContent = username;
+  document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
+
+  function logout() {
+    localStorage.clear();
+    location.href = '../index.html';
+  }
+
+  function goToTest() {
+    localStorage.setItem("test", "測驗");
+    location.href = 'game/number_game2.html';
+  }
+
+  function goToPractice() {
+    localStorage.setItem("test", "練習");
+    location.href = 'game/number_game1.html';
+  }
+
+  // 🟡 將 renderResult 改為 async function
+  async function renderResult() {
+    const level = localStorage.getItem("test");
+    if (level === "練習" || !level) {
+      document.getElementById("end").textContent = "練習結束";
+      document.getElementById("reportContainer").style.display = "none";
+      document.getElementById("btnPractice").style.display = "inline-block";
+      document.getElementById("btnTest").style.display = "inline-block";
+      return;
+    }
+    document.getElementById("end").textContent = "遊戲綜合報表";
+    document.getElementById("reportContainer").style.display = "block";
+    document.getElementById("btnPractice").style.display = "none";
+    document.getElementById("btnTest").style.display = "none";
+    document.getElementById("user-info").style.display = "block";
+    document.getElementById("logout").style.display = "block";
+
+
+
+    // 翻牌
+    const t1 = +localStorage.getItem("reminderTime") || 0;
+    const t2 = +localStorage.getItem("reminderTime2") || 0;
+    const t3 = +localStorage.getItem("reminderTime3") || 0;
+    const h1 = +localStorage.getItem("reminderCount") || 0;
+    const h2 = +localStorage.getItem("reminderCount1") || 0;
+    const h3 = +localStorage.getItem("reminderCount2") || 0;
+    const flipBody = document.getElementById("flipBody");
+    flipBody.innerHTML = "";
+    [["第一關", t1.toFixed(1), h1], ["第二關", t2.toFixed(1), h2], ["第三關", t3.toFixed(1), h3]]
+      .forEach(arr => {
+        const tr = document.createElement("tr");
+        arr.forEach(val => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.appendChild(td);
+        });
+        flipBody.appendChild(tr);
+      });
+    document.getElementById("flip_totalTime").textContent = (t1 + t2 + t3).toFixed(1);
+    document.getElementById("flip_totalHint").textContent = h1 + h2 + h3;
+
+    // 天燈
+    const acc = localStorage.getItem("accuracy") || "0";
+    const fail = localStorage.getItem("failureRate") || "0";
+    const rank = localStorage.getItem("rank") || "—";
+    const score = localStorage.getItem("score") || "—";
+    document.getElementById("lantern_accuracy").textContent = acc + "%";
+    document.getElementById("lantern_failure").textContent = fail + "%";
+    document.getElementById("lantern_rank").textContent = rank;
+    document.getElementById("lantern_score").textContent = score;
+
+    // 數字對對碰
+    const mt = [ +localStorage.getItem("reminderTime") || 0,
+                +localStorage.getItem("reminderTime2") || 0,
+                +localStorage.getItem("reminderTime3") || 0 ];
+    const mh = [ +localStorage.getItem("hintCount1") || 0,
+                +localStorage.getItem("hintCount2") || 0,
+                +localStorage.getItem("hintCount3") || 0 ];
+    const mw = [ +localStorage.getItem("count2") || 0,
+                +localStorage.getItem("count3") || 0,
+                +localStorage.getItem("count4") || 0 ];
+    const matchBody = document.getElementById("matchBody");
+    matchBody.innerHTML = "";
+    [["第一關", mt[0].toFixed(1), mh[0], mw[0]],
+      ["第二關", mt[1].toFixed(1), mh[1], mw[1]],
+      ["第三關", mt[2].toFixed(1), mh[2], mw[2]]]
+      .forEach(arr => {
+        const tr = document.createElement("tr");
+        arr.forEach(val => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.appendChild(td);
+        });
+        matchBody.appendChild(tr);
+      });
+    document.getElementById("match_totalTime").textContent = mt.reduce((a,b)=>a+b,0).toFixed(1);
+    document.getElementById("match_totalHint").textContent = mh.reduce((a,b)=>a+b,0);
+    document.getElementById("match_totalWrong").textContent = mw.reduce((a,b)=>a+b,0);
+
+    // 數字連線
+    const lt = [ +localStorage.getItem("duration0") || 0,
+                +localStorage.getItem("duration1") || 0,
+                +localStorage.getItem("duration2") || 0,
+                +localStorage.getItem("duration3") || 0 ];
+    const lh = [ +localStorage.getItem("hintCount0") || 0,
+                +localStorage.getItem("hintCount1") || 0,
+                +localStorage.getItem("hintCount2") || 0,
+                +localStorage.getItem("hintCount3") || 0 ];
+    const lw = [ +localStorage.getItem("wrongClicks0") || 0,
+                +localStorage.getItem("wrongClicks1") || 0,
+                +localStorage.getItem("wrongClicks2") || 0,
+                +localStorage.getItem("wrongClicks3") || 0 ];
+    const lineBody = document.getElementById("lineBody");
+    lineBody.innerHTML = "";
+    lt.forEach((t, i) => {
+      const tr = document.createElement("tr");
+      [ `第 ${i+1} 關`, t.toFixed(1), lh[i], lw[i] ].forEach(val => {
+        const td = document.createElement("td");
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+      lineBody.appendChild(tr);
+    });
+    document.getElementById("line_totalTime").textContent = lt.reduce((a,b)=>a+b,0).toFixed(1);
+    document.getElementById("line_totalHint").textContent = lh.reduce((a,b)=>a+b,0);
+    document.getElementById("line_totalWrong").textContent = lw.reduce((a,b)=>a+b,0);
+    const user_name = localStorage.getItem('nickname') || 0; // 預設為 0 或其他適當值
+    const age = localStorage.getItem('age');
+    // ⬇️ 數字連線資料上傳到資料庫
+     try {
+      const response = await fetch("/digital_connection", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: user_name,
+          age:age,
+          total_time: parseInt(lt.reduce((a,b)=>a+b, 0)),
+          total_reminders: lh.reduce((a,b)=>a+b, 0),
+          Total_number_of_missed: lw.reduce((a,b)=>a+b, 0),
+          Time_per_level1: lt[0],
+          reminders_per_level1: lh[0],
+          missed_per_level1: lw[0],
+          Time_per_level2: lt[1],
+          reminders_per_level2: lh[1],
+          missed_per_level2: lw[1],
+          Time_per_level3: lt[2],
+          reminders_per_level3: lh[2],
+          missed_per_level3: lw[2],
+          Time_per_level4: lt[3],
+          reminders_per_level4: lh[3],
+          missed_per_level4: lw[3]
+        })
+      });
+
+
+      if (!response.ok) {
+        throw new Error(`伺服器錯誤：${response.status}`);
+      }
+
+      const resJson = await response.json();
+      console.log("✅ 數字連線資料上傳成功：", resJson);
+    } catch (error) {
+    }
+
+    // ⬇️ 匯出 PDF 報表
+    
+      exportReportAsPDF();
+   
+  }
+
+  // PDF 下載
+  async function exportReportAsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+
+    const container = document.getElementById("reportContainer");
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const imgProps = doc.getImageProperties(imgData);
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    const fileName = `測驗報表_${username}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  }
+</script>
+
+</body>
+</html>

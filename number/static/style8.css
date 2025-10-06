@@ -1,0 +1,155 @@
+/* 基本設定 */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  font-size: 28px;
+  color: #333;
+}
+
+/* 主容器寬度與內距 */
+.container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 標題 */
+header h1 {
+  font-size: 48px;
+  text-align: center;
+  margin: 40px 0 30px 0;
+  font-weight: bold;
+}
+
+/* 使用者資訊區 */
+.user-info {
+  position: fixed;
+  top: 20px;
+  right: 30px;
+  font-size: 28px;
+  color: #333;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  z-index: 1000;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.user-info button {
+  padding: 12px 20px;
+  background-color: #CECEFF;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 24px;
+  transition: background-color 0.3s ease;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+.user-info button:hover {
+  background-color: #b2b2ff;
+}
+
+/* 遊戲規則文字列表 */
+.rule-container {
+  margin-top: 60px;
+}
+
+.rule-list {
+  font-size: 28px;
+  line-height: 1.8;
+  padding-left: 40px;
+  padding-right: 40px;
+  list-style-type: decimal;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+/* 箭頭按鈕（右、左、X） */
+.arrow-button,
+.arrow-button1,
+.arrow-button2 {
+  position: fixed;
+  font-size: 36px;
+  color: rgb(0, 0, 0);
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  font-family: "標楷體", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  z-index: 999;
+}
+
+/* 各按鈕位置 */
+.arrow-button {
+  bottom: 250px;
+  right: 30px;
+}
+
+.arrow-button1 {
+  bottom: 250px;
+  left: 30px;
+}
+
+.arrow-button2 {
+  top: 20px;       /* 移到左上 */
+  left: 20px;
+  font-size: 50px;
+  bottom: auto;    /* 取消底部定位 */
+  transform: none; /* 取消置中位移 */
+}
+
+/* 懸停效果 */
+
+/* 響應式設計：手機螢幕自動縮排與調整 */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+
+  header h1 {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+
+  .rule-list {
+    font-size: 22px;
+    line-height: 1.6;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .user-info {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    font-size: 22px;
+    right: 10px;
+    top: 10px;
+  }
+
+  .user-info button {
+    font-size: 20px;
+    padding: 8px 12px;
+  }
+
+  .arrow-button,
+  .arrow-button1 {
+    font-size: 28px;
+    padding: 8px 14px;
+    bottom: 20px;
+  }
+  
+  /* 返回鍵放左上方，大小調整 */
+  .arrow-button2 {
+    top: 10px;
+    left: 10px;
+    font-size: 28px;
+    padding: 8px 14px;
+  }
+}

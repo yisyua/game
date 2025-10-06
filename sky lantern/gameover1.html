@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>遊戲結果</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            color: #000;
+            }
+    
+
+    body {
+            background: linear-gradient(135deg, 
+            #1a1a2e 0%, 
+            #16213e 25%, 
+            #0f3460 50%, 
+            #533483 75%, 
+            #e94057 100%);
+            background-attachment: fixed; /* 確保背景固定 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            min-height: 100vh;
+          }
+
+          .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s infinite;
+    }
+
+    .star:nth-child(odd) { animation-delay: 1.5s; }
+    .star:nth-child(3n) { animation-delay: 0.5s; }
+
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    .clouds {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .cloud {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+        animation: cloudFloat 20s linear infinite;
+    }
+
+    .cloud::before,
+    .cloud::after {
+        content: '';
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50px;
+    }
+
+    .cloud1 {
+        width: 80px;
+        height: 30px;
+        top: 20%;
+        animation-duration: 25s;
+    }
+
+    .cloud1::before {
+        width: 50px;
+        height: 40px;
+        top: -15px;
+        left: 10px;
+    }
+
+    .cloud1::after {
+        width: 40px;
+        height: 35px;
+        top: -10px;
+        right: 10px;
+    }
+
+    .cloud2 {
+        width: 60px;
+        height: 25px;
+        top: 60%;
+        animation-duration: 30s;
+        animation-delay: -10s;
+    }
+
+    .cloud2::before {
+        width: 40px;
+        height: 30px;
+        top: -10px;
+        left: 5px;
+    }
+
+    .cloud2::after {
+        width: 35px;
+        height: 28px;
+        top: -8px;
+        right: 5px;
+    }
+
+    @keyframes cloudFloat {
+        from { transform: translateX(-100px); }
+        to { transform: translateX(calc(100vw + 100px)); }
+    }
+
+    .user-info {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-size: 1.3rem;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+      z-index: 999;
+      animation: slideInRight 0.5s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .user-info button {
+      font-size: 1.1rem;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .user-info button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 2rem;
+      color: black;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-weight: 700;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .container {
+      background: rgba(229, 217, 217, 0.98); 
+      padding: 3rem 2.5rem;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 650px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .result-box1 {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      padding: 2.5rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #f1ae9a 0%, #e9a58f 100%);
+      color: #333;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(252, 182, 159, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .result-box1:hover {
+      transform: translateY(-5px);
+    }
+
+    .result-box1 .rank-text {
+      font-size: 2.8rem;
+      color: #ea5252;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-box1 .score-text {
+      font-size: 2rem;
+      color: #098078;
+    }
+
+    .toggle-btn {
+      background: linear-gradient(135deg,#2688b9 0% , #085a83 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.3rem;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(132, 250, 176, 0.3);
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(132, 250, 176, 0.5);
+    }
+
+    .details-box {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      border-radius: 20px;
+      font-size: 1.5rem;
+      line-height: 2.2;
+      box-shadow: 0 6px 20px rgba(142, 197, 252, 0.3);
+      animation: slideDown 0.4s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        max-height: 0;
+        opacity: 0;
+      }
+      to {
+        max-height: 300px;
+        opacity: 1;
+      }
+    }
+
+    .details-box p {
+      margin: 0.8rem 0;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .buttons button {
+      flex: 1 1 160px;
+      max-width: 200px;
+      font-size: 1.5rem;
+      padding: 1.2rem 1.5rem;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      background: linear-gradient(135deg, #6C6F7D 80%);
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(168, 237, 234, 0.3);
+    }
+
+    .buttons button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(168, 237, 234, 0.5);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      .container {
+        padding: 2rem 1.5rem;
+      }
+      .result-box1 {
+        font-size: 1.4rem;
+        padding: 1.8rem;
+      }
+      .result-box1 .rank-text {
+        font-size: 2rem;
+      }
+      .result-box1 .score-text {
+        font-size: 1.6rem;
+      }
+      .buttons button {
+        font-size: 1.3rem;
+        flex: 1 1 120px;
+        max-width: 150px;
+      }
+      .user-info {
+        font-size: 1.1rem;
+        padding: 0.8rem 1rem;
+        top: 1rem;
+        right: 1rem;
+      }
+      .user-info button {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+      }
+      .toggle-btn {
+        font-size: 1.2rem;
+        padding: 0.9rem 1.5rem;
+      }
+      .details-box {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+   <div class="stars"></div>
+    <div class="clouds">
+      <div class="cloud cloud1"></div>
+      <div class="cloud cloud2"></div>
+    </div>
+  <div class="container">
+    <h1>練習結束</h1>
+
+    <div class="buttons">
+      <button class="exit-btn" onclick="location.href='練習版.html';clearGame()" id="test" >再練習</button>
+      <button class="exit-btn" onclick="location.href='index.html';clearGame()" id="test2" > 進入測試</button>
+    </div>
+  </div>
+
+  <script>
+       function createStars() {
+        const starsContainer = document.querySelector('.stars');
+        const starCount = 100;
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            starsContainer.appendChild(star);
+        }
+    }
+    window.onload = createStars;
+  </script>
+</body>
+</html>
