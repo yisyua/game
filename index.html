@@ -803,8 +803,8 @@ function checkLoginState() {
 
 window.onload = checkLoginState;
 
-// Submit 按鈕事件
-submitBtn.addEventListener('click', async (event) => {
+// Submit 按鈕事件 (修正版：移除後端 API 呼叫)
+submitBtn.addEventListener('click', (event) => {
     event.preventDefault();
     if (!validateForm()) return;
 
@@ -815,32 +815,26 @@ submitBtn.addEventListener('click', async (event) => {
     const age = ageSelect.value;
     const gender = genderSelect.value;
     const hobby = (hobbySelect.value === '其他活動' && otherHobbyInput.value.trim() !== '')
-                  ? otherHobbyInput.value.trim()
-                  : hobbySelect.value;
+                      ? otherHobbyInput.value.trim()
+                      : hobbySelect.value;
 
-    // 儲存 localStorage
+    // 🌟 關鍵修正：不再嘗試連線到後端 /users API 🌟
+
+    // 儲存 localStorage (保留)
     localStorage.setItem('nickname', nickname);
     localStorage.setItem('age', age);
     localStorage.setItem('gender', gender);
     localStorage.setItem('hobby', hobby);
 
-    try {
-        const res = await fetch("/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: nickname, age, gender, hobby })
-        });
-        const data = await res.json();
-        console.log("後端回覆:", data);
-
-        submitBtn.classList.add('success-animation');
-        submitBtn.innerHTML = '✅ 準備進入遊戲';
-        setTimeout(() => window.location.href = 'changecard/changecardhead.html', 800);
-    } catch (err) {
-        console.error("錯誤:", err);
-        submitBtn.innerHTML = '發生錯誤，請重試';
-        submitBtn.disabled = false;
-    }
+    // 模擬成功動畫並直接跳轉
+    submitBtn.classList.add('success-animation');
+    submitBtn.innerHTML = '✅ 準備進入遊戲';
+    
+    // 遊戲檔案的路徑是 changecard/changecardhead.html
+    // 這裡我們直接導向：
+    setTimeout(() => {
+        window.location.href = 'changecard/changecardhead.html';
+    }, 800); // 延遲 0.8 秒，讓動畫播完
 });
 
 
