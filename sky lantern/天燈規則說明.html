@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天燈遊戲規則</title>
+<style>
+    /* 從前面的星空主題複製過來的樣式 */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        /* 暗色星空背景 */
+        background: linear-gradient(135deg, 
+            #1a1a2e 0%, 
+            #16213e 25%, 
+            #0f3460 50%, 
+            #533483 75%, 
+            #e94057 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* 星空粒子效果 - 調整為暗色系發光粒子 */
+    .floating-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .particle {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3));
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        animation: float 12s ease-in-out infinite;
+    }
+    /* 繼承您原有的粒子延遲設定 */
+    .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+    .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+    .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+    .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+    .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+    .particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+    .particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+        10% { transform: translateY(90vh) scale(1); opacity: 0.7; }
+        90% { transform: translateY(-10vh) scale(1); opacity: 0.7; }
+        100% { transform: translateY(-20vh) scale(0); opacity: 0; }
+    }
+
+    /* ----------- 主要容器 (使用 glassmorphism 風格) ----------- */
+    .main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-container {
+        /* 玻璃擬態風格：半透明白色背景 */
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
+        padding: 50px;
+        width: 100%;
+        max-width: 700px;
+        position: relative;
+    }
+
+    /* ----------- 標題 (使用暗色主題樣式) ----------- */
+    .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .login-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: white; /* 標題文字為白色 */
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.4); /* 發光效果 */
+        letter-spacing: 5px;
+    }
+
+    /* ----------- 內容區 (淺色背景，暗色文字) ----------- */
+    .rules-content {
+        font-size: 1.3rem;
+        color: #1a1a2e; /* 確保文字在淺色背景上清晰 */
+        font-weight: 600;
+        line-height: 2.2rem;
+        text-align: left;
+        padding: 30px;
+        /* 淺色內卡片，確保規則文字清晰可讀 */
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 規則編號樣式 */
+    .rules-content p {
+        margin-bottom: 10px;
+        padding-left: 5px;
+        border-left: 4px solid #e94057; /* 使用主題色紅-紫漸變的邊框 */
+    }
+    
+    /* ----------- 返回/關閉按鈕 (左上角 X) ----------- */
+    .close-button {
+        position: fixed;
+        top: 30px;
+        left: 30px;
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: white; /* 顏色改為白色 */
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.3s ease;
+    }
+
+    .close-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    /* ----------- 下一頁按鈕 (右側箭頭) ----------- */
+    .arrow-button {
+        position: fixed;
+        top: 50%;
+        right: 40px;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+
+    .arrow-right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        /* 替換為透明玻璃擬態風格，與 .close-button 一致 */
+        background: rgba(255, 255, 255, 0.15); 
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.2); 
+        
+        color: white; /* 箭頭顏色為白色 */
+        font-size: 2.2rem;
+        
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3); 
+        
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none; 
+    }
+    
+    .arrow-right:hover {
+        background: rgba(255, 255, 255, 0.25);
+        /* 保持 translateY(-50%) 以避免因為 transform 衝突導致位置錯誤 */
+        transform: translateY(-50%) scale(1.1); 
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ----------- 響應式 ----------- */
+    @media (max-width: 768px) {
+        .login-container {
+            padding: 30px 20px;
+        }
+        .login-header h1 {
+            font-size: 2rem;
+            letter-spacing: 3px;
+        }
+        .rules-content {
+            font-size: 1rem;
+            line-height: 1.8rem;
+            padding: 20px;
+        }
+        .close-button {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            top: 20px;
+            left: 20px;
+        }
+        .arrow-right {
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
+        }
+        .arrow-button {
+            right: 20px;
+        }
+        .arrow-right:hover {
+            transform: translateY(-50%) scale(1.1); 
+        }
+    }
+</style>
+</head>
+<body>
+<div class="floating-particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<div class="close-button" onclick="location.href='Home screen.html'">X</div>
+
+<div class="main-container">
+    <div class="login-container">
+        <div class="login-header">
+            <h1>天燈連線遊戲規則</h1>
+        </div>
+        <div class="rules-content">
+            <p>1. 盡可能點擊更多天燈，爭取最高分。</p>
+            <p>2. 連續點擊天燈，**連擊數**會增加。</p>
+            <p>3. 點擊失誤或漏掉天燈，連擊會**中斷歸零**。</p>
+            <p>4. **炸彈**作為遊戲的陷阱，不要點擊到炸彈!（點擊會扣分）。</p>
+            <p>5. 遊戲時間為 **60 秒**，時間結束時，遊戲會自動停止。</p>
+        </div>
+    </div>
+</div>
+
+<div class="arrow-button">
+    <a class="arrow-right" href="天燈(選擇介面).html">&#9654;</a>
+</div>
+
+<script>
+</script>
+</body>
+</html>
